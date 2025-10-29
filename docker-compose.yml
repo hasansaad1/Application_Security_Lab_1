@@ -1,0 +1,100 @@
+services:
+  nginx:
+    image: nginx:1.29.2-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - public
+
+  frontend:
+    build:
+      context: frontend
+      target: development
+    volumes:
+      - /code/node_modules
+    networks:
+      - public
+    depends_on:
+      - backend
+    environment:
+      NODE_ENV: development
+      # Uncomment polling if file changes aren't detected on your host
+      # WATCHPACK_POLLING: "true"
+      # CHOKIDAR_USEPOLLING: "true"
+    develop:
+      watch:
+        - path: ./frontend
+          target: /code
+          action: sync
+          ignore:
+            - node_modules/
+            - .next/
+            - .git/
+            - Dockerfile*
+        - path: ./frontend/package.json
+          action: rebuild
+        - path: ./frontend/package-lock.json
+          action: rebuild
+
+  backend:
+    build:
+      context: backend
+      target: development
+    environment:
+      - DATABASE_DB=homigo
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=/run/secrets/db-password
+      - DATABASE_HOST=db
+      - PORT=8080
+      - NODE_ENV=development
+    secrets:
+      - db-password
+    volumes:
+      - back-notused:/opt/app/node_modules
+    networks:
+      - public
+      - private
+    depends_on:
+      - db
+    develop:
+      watch:
+        - path: ./backend
+          target: /code
+          action: sync
+          ignore:
+            - node_modules/
+            - .git/
+            - dist/
+            - Dockerfile*
+        - path: ./backend/package.json
+          action: rebuild
+        - path: ./backend/package-lock.json
+          action: rebuild
+
+  db:
+    image: mysql:8.0.44
+    restart: always
+    secrets:
+      - db-password
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - private
+    environment:
+      - MYSQL_DATABASE=homigo
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
+
+networks:
+  public:
+  private:
+
+volumes:
+  back-notused:
+  db-data:
+
+secrets:
+  db-password:
+    file: db/password.txt

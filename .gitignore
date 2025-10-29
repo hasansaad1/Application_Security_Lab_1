@@ -1,0 +1,51 @@
+# ==========================
+# Global OS / editor files
+# ==========================
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+.vscode/
+.idea/
+.env
+.env.*
+!.env.example
+
+# ==========================
+# Node / npm
+# ==========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==========================
+# Next.js
+# ==========================
+.next/
+out/
+.vercel/
+
+# ==========================
+# Express / backend
+# ==========================
+dist/
+build/
+coverage/
+
+# ==========================
+# Docker
+# ==========================
+# Ignore local volumes or generated data
+db-data/
+db/password.txt
+*.pid
+*.sock
+
+# ==========================
+# Misc build caches
+# ==========================
+.cache/
+.tmp/
