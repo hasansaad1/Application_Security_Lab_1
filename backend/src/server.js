@@ -10,7 +10,6 @@ app.use(helmet());
 // parse JSON bodies, with limit
 app.use(express.json({ limit: '1mb' }));
 
-app.use(cors());
 const allowedOrigin = process.env.CORS_ORIGIN || '*'; //this is okay in local/dev
 app.use(
   cors({
