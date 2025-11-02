@@ -49,3 +49,10 @@ db/password.txt
 # ==========================
 .cache/
 .tmp/
+
+# ==========================
+# Certificates and keys
+# ==========================
+nginx/ssl/*.key
+nginx/ssl/*.crt
+

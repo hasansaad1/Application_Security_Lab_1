@@ -30,6 +30,7 @@ git clone <this-repo-url>
 cd Application_Security_Lab_1
 # Set your MySQL password for the DB
 mkdir -p db && echo 'yourpassword' > db/password.txt
+# For SSL please add your self signed CERTIFICATE and private keys in nginx/ssl/
 docker compose up --build
 ```
 - Visit [http://localhost](http://localhost) (frontend via NGINX proxy)
