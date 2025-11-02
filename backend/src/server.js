@@ -1,9 +1,23 @@
 const express = require("express");
 const morgan = require("morgan");
-
+const helmet = require("helmet");
+const cors = require("cors");
 const app = express();
 
 app.use(morgan("dev"));
+app.use(helmet());
+
+// parse JSON bodies, with limit
+app.use(express.json({ limit: '1mb' }));
+
+const allowedOrigin = process.env.CORS_ORIGIN || '*'; //this is okay in local/dev
+app.use(
+  cors({
+    origin: allowedOrigin,
+    credentials: true,
+  })
+);
+
 
 app.get("/health", function(req, res) {
     // do app logic here to determine if app is truly healthy
