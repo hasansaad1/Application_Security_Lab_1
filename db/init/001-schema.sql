@@ -7,9 +7,11 @@ USE HomigoDB;
 
 -- Refering to images...:
 
-CREATE TABLE Images (
+CREATE TABLE ListingsImages (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    path VARCHAR(255) NOT NULL
+    listing_id INT NOT NULL,
+    path VARCHAR(255) NOT NULL,
+    FOREIGN KEY (listing_id) REFERENCES Listings(id),
 );
 
 
@@ -23,10 +25,9 @@ CREATE TABLE Users (
     email VARCHAR(100) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     role ENUM('admin', 'landlord', 'tenant') NOT NULL,
-    profile_picture_id INT,
+    profile_picture_path VARCHAR(255) DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     phone_number VARCHAR(20) NOT NULL,
-    FOREIGN KEY (profile_picture_id) REFERENCES Images(id)
 );
 
 
@@ -48,9 +49,7 @@ CREATE TABLE Listings (
     address_line2 VARCHAR(255),
     is_available BOOLEAN DEFAULT TRUE,
     publication_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    listing_picture_id INT,
-    FOREIGN KEY (owner_id) REFERENCES Users(id),
-    FOREIGN KEY (listing_picture_id) REFERENCES Images(id)
+    FOREIGN KEY (owner_id) REFERENCES Users(id)
 );
 
 
