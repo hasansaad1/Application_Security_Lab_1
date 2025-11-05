@@ -5,18 +5,6 @@ CREATE DATABASE HomigoDB;
 USE HomigoDB;
 
 
--- Refering to images...:
-
-CREATE TABLE ListingsImages (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    listing_id INT NOT NULL,
-    path VARCHAR(255) NOT NULL,
-    FOREIGN KEY (listing_id) REFERENCES Listings(id),
-);
-
-
-
-
 -- Refering to the users...:
 
 CREATE TABLE Users (
@@ -27,7 +15,7 @@ CREATE TABLE Users (
     role ENUM('admin', 'landlord', 'tenant') NOT NULL,
     profile_picture_path VARCHAR(255) DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    phone_number VARCHAR(20) NOT NULL,
+    phone_number VARCHAR(20) NOT NULL
 );
 
 
@@ -54,7 +42,14 @@ CREATE TABLE Listings (
 
 
 
+-- Refering to images...:
 
+CREATE TABLE ListingsImages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    listing_id INT NOT NULL,
+    path VARCHAR(255) NOT NULL,
+    FOREIGN KEY (listing_id) REFERENCES Listings(id)
+);
 
 
 -- Refering to the users-listing likings...:
