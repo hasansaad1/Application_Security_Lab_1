@@ -1,10 +1,3 @@
-
-
-CREATE DATABASE HomigoDB;
-
-USE HomigoDB;
-
-
 -- Refering to the users...:
 
 CREATE TABLE Users (

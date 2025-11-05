@@ -2,6 +2,7 @@ const express = require("express");
 const morgan = require("morgan");
 const helmet = require("helmet");
 const cors = require("cors");
+const { pool } = require("./config");
 const app = express();
 
 app.use(morgan("dev"));
@@ -19,11 +20,23 @@ app.use(
 );
 
 
-app.get("/health", function(req, res) {
+app.get("/health", async(req, res) => {
     // do app logic here to determine if app is truly healthy
     // you should return 200 if healthy, and anything else will fail
     // if you want, you should be able to restrict this to localhost
-    res.send("I am happy and healthy\n");
+    try {
+      const [rows] = await pool.query("SHOW TABLES;");
+      res.status(200).json({
+        status: "healthy",
+        tables: rows
+      });
+    } catch (err) {
+      console.error("DB connection failed:", err);
+      res.status(500).json({
+        status: "unhealthy",
+        error: err.message
+      });
+    }
 });
 
 module.exports = app;
