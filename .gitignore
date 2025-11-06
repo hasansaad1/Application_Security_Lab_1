@@ -41,6 +41,7 @@ coverage/
 # Ignore local volumes or generated data
 db-data/
 db/password.txt
+db/enc_key.txt
 *.pid
 *.sock
 
