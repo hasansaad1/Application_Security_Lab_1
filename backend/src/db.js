@@ -13,7 +13,8 @@ async function createUser({ username, email, password_hash, role, profile_pictur
      VALUES (?, ?, ?, ?, ?, ?);`,
     [username, email, password_hash, role, profile_picture_path, phone_number]
   );
-  return result.insertId;
+  const [rows] = await pool.query(`SELECT * FROM Users WHERE id = ?;`, [result.insertId]);
+  return rows[0];
 }
 
 // Get all users

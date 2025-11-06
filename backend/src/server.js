@@ -35,6 +35,7 @@ app.get("/health", async(req, res) => {
         role: "landlord",
         phone_number: "+1-555-999-0000"
       });
+
       const listingsByOwner = await db.getListingsByOwner(newUser.id);
       const existingListing = listingsByOwner.find(l => l.title === "Mountain House");
 
