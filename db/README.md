@@ -39,9 +39,19 @@ openssl rand -base64 32 > db/enc_key.txt
 ## 🔐 Key Rotation & Backup Policy
 ### 🔁 Key Rotation
 
-- Regularly generate new encryption keys using openssl rand -base64 32.
+- Replace encryption keys periodically to reduce the risk of data exposure.
+
+- Generate a new secure key using the same algorithm (e.g., AES-256-CBC).
+
 - Maintain key versioning, e.g., `enc_key_v1`, `enc_key_v2`.
-- Implement transitional re-encryption for existing rows (decrypt with old key, re-encrypt with new one).
+
+- Re-encrypt existing records: decrypt with the old key, encrypt with the new key.
+
+- Apply gradual transition if needed: new records use the new key, old records are re-encrypted progressively.
+
+- Verify that all data can be correctly decrypted after rotation.
+
+- Update backups to reflect data encrypted with the new key.
 
 ### 💾 Backup
 

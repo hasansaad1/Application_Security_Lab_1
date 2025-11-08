@@ -1,3 +1,8 @@
+CREATE DATABASE IF NOT EXISTS homigo;
+
+USE homigo;
+
+
 -- Refering to the users...:
 
 CREATE TABLE Users (
