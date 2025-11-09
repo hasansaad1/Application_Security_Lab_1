@@ -91,10 +91,17 @@ async function getPhoneNumber(listing_id) {
   }
 }
 
+// Get listings by owner
+async function getListingsByOwner(ownerId) {
+  const [rows] = await pool.query(`SELECT * FROM Listings WHERE owner_id = ?`, [ownerId]);
+  return rows.map(r => new Listing(r));
+}
+
 module.exports = {
   Listing,
   getListings,
   getListingById,
   createListing,
-  getPhoneNumber
+  getPhoneNumber,
+  getListingsByOwner
 };

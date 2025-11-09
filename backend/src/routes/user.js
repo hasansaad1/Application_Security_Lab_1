@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { getUsers, getUserByEmail, createUser, getListingsByOwner } = require("../services/user");
+const { getUsers, getUserByEmail, createUser } = require("../services/user");
 
 // List all users
 router.get("/", async (req, res) => {
@@ -41,19 +41,6 @@ router.post("/", async (req, res) => {
     if (err.code === "ER_DUP_ENTRY") {
       return res.status(409).json({ error: "User with same username or email already exists" });
     }
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-// Get listings by owner id
-router.get("/:id/listings", async (req, res) => {
-  try {
-    const ownerId = Number(req.params.id);
-    if (!Number.isInteger(ownerId)) return res.status(400).json({ error: "Invalid user id" });
-    const listings = await getListingsByOwner(ownerId);
-    res.json(listings);
-  } catch (err) {
-    console.error("Error fetching listings by owner:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });

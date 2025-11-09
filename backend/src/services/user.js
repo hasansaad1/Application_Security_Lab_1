@@ -30,7 +30,7 @@ async function getUserByEmail(email) {
   } catch (e) {
     console.warn("Could not decrypt phone number:", e.message);
   }
-  return user;
+  return user; //TO DO: check security and limitations of usage
 }
 
 // Create new user
@@ -70,16 +70,9 @@ async function getUsers() {
   });
 }
 
-// Get listings by owner
-async function getListingsByOwner(ownerId) {
-  const [rows] = await pool.query(`SELECT * FROM Listings WHERE owner_id = ?`, [ownerId]);
-  return rows.map(r => new Listing(r));
-}
-
 module.exports = {
   User,
   getUserByEmail,
   createUser,
-  getUsers,
-  getListingsByOwner
+  getUsers
 };
