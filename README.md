@@ -30,6 +30,8 @@ git clone <this-repo-url>
 cd Application_Security_Lab_1
 # Set your MySQL password for the DB
 mkdir -p db && echo 'yourpassword' > db/password.txt
+# Generate your encryption key 
+openssl rand -base64 32 > db/enc_key.txt
 # For SSL please add your self signed CERTIFICATE and private keys in nginx/ssl/
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout nginx/ssl/selfsigned.key -out nginx/ssl/selfsigned.crt -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
 

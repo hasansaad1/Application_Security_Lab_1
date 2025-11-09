@@ -1,8 +1,6 @@
+CREATE DATABASE IF NOT EXISTS homigo;
 
-
-CREATE DATABASE HomigoDB;
-
-USE HomigoDB;
+USE homigo;
 
 
 -- Refering to the users...:
@@ -15,7 +13,7 @@ CREATE TABLE Users (
     role ENUM('admin', 'landlord', 'tenant') NOT NULL,
     profile_picture_path VARCHAR(255) DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    phone_number VARCHAR(20) NOT NULL
+    phone_number TEXT NOT NULL
 );
 
 

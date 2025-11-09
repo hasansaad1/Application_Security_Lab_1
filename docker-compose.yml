@@ -55,8 +55,10 @@ services:
       - PORT=8080
       - NODE_ENV=development
       - CORS_ORIGIN=https://localhost
+      - ENCRYPTION_KEY=/run/secrets/enc-key
     secrets:
       - db-password
+      - enc-key
     volumes:
       - back-notused:/opt/app/node_modules
     networks:
@@ -104,3 +106,5 @@ volumes:
 secrets:
   db-password:
     file: db/password.txt
+  enc-key:
+    file: db/enc_key.txt

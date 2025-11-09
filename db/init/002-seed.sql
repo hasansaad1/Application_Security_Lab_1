@@ -1,5 +1,3 @@
-use HomigoDB;
-
 INSERT INTO Users (username, email, password_hash, role, profile_picture_path, phone_number)
 VALUES
 ('admin_john', 'admin.john@homigo.com', 'hashed_pw_123', 'admin', '/images/profiles/admin_john.jpg', '+1-555-111-2222'),
