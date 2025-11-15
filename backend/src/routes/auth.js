@@ -9,6 +9,21 @@ const userService = require("../services/user");
 
 const router = express.Router();
 
+const COOKIE_SETTINGS = {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'strict',
+  path: '/',
+  maxAge: 1000 * 60 * 60, 
+};
+
+function signToken(user) {
+  return jwt.sign({
+      id: user.id,
+      role: user.role,
+    }, config.auth.jwtSecret, { expiresIn: config.auth.jwtExpiresIn }
+  );
+};
 
 router.post("/register", uploadProfilePicture, async (req, res) => {
   try {
@@ -40,19 +55,8 @@ router.post("/register", uploadProfilePicture, async (req, res) => {
     });
 
     /* Generate JWT and store it in cookie */
-    const token = jwt.sign({
-        sub: user.id,
-        role: user.role,
-      }, config.auth.jwtSecret, { expiresIn: config.auth.jwtExpiresIn }
-    );
-
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      path: '/',
-      maxAge: 1000 * 60 * 60, 
-    });
+    const token = signToken(user);
+    res.cookie('token', token, COOKIE_SETTINGS);
 
     res.status(201).json({
       success: true,
@@ -66,6 +70,36 @@ router.post("/register", uploadProfilePicture, async (req, res) => {
       return res.status(409).json({ error: "User with same username or email already exists" });
     }
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/login",  async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    /* Validations */
+    const user = await userService.getUserByEmail(email);
+    if (!user) {
+      return res.status(401).json({ error: 'Not found' });
+    }
+
+    const validCredentials = await bcrypt.compare(password, user.password_hash);
+    if (!validCredentials) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    /* Generate JWT and store it in cookie */
+    const token = signToken(user);
+    res.cookie('token', token, COOKIE_SETTINGS);
+
+    res.status(200).json({
+      data: {
+        user: user.toJSON()
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 

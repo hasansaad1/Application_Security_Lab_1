@@ -15,7 +15,7 @@ async function getUserByEmail(email) {
   } catch (e) {
     console.warn("Could not decrypt phone number:", e.message);
   }
-  return user; //TO DO: check security and limitations of usage
+  return user; // TODO: check security and limitations of usage
 }
 
 // Create new user
