@@ -5,6 +5,9 @@ const cors = require("cors");
 const cookieParser = require('cookie-parser');
 const app = express();
 
+const { uploadErrorHandler } = require("./middleware/upload/errorHandler");
+
+const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const listingRoutes = require("./routes/listings");
 
@@ -33,7 +36,11 @@ app.get("/health", function(req, res) {
 });
 
 // Routes
+app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/listings", listingRoutes);
+
+// Error handlers
+app.use(uploadErrorHandler);
 
 module.exports = app;

@@ -1,0 +1,72 @@
+const express = require('express');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const path = require('path');
+
+const config = require("../config");
+const { uploadProfilePicture } = require("../middleware/upload/profilePicture");
+const userService = require("../services/user");
+
+const router = express.Router();
+
+
+router.post("/register", uploadProfilePicture, async (req, res) => {
+  try {
+    // TODO: I am not sure if role should be added (what if admin is selected); at least we should check
+    const { username, email, password, role, phone_number } = req.body;
+
+    /* Validations */
+    if (!username || !email || !password || !role || !phone_number) {
+      return res.status(400).json({ error: "Missing required fields: username, email, password, role, phone_number" });
+    }
+    
+    /* Save profile picture if included */
+    let profile_picture_path = null;
+    if (req.file) {
+        profile_picture_path = path.relative(config.uploads.root, req.file.path);
+    }
+    
+    /* Hash password */
+    const password_hash = await bcrypt.hash(password, 10);
+
+    /* Create user */
+    const user = await userService.createUser({
+        username,
+        email,
+        password_hash,
+        role,
+        profile_picture_path,
+        phone_number
+    });
+
+    /* Generate JWT and store it in cookie */
+    const token = jwt.sign({
+        sub: user.id,
+        role: user.role,
+      }, config.auth.jwtSecret, { expiresIn: config.auth.jwtExpiresIn }
+    );
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 1000 * 60 * 60, 
+    });
+
+    res.status(201).json({
+      success: true,
+      data: {
+        user: user.toJSON()
+      }
+    });
+  } catch (err) {
+    console.error("Error creating user:", err);
+    if (err.code === "ER_DUP_ENTRY") {
+      return res.status(409).json({ error: "User with same username or email already exists" });
+    }
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+module.exports = router;
