@@ -31,4 +31,4 @@ function auth(required=true) {
   };
 }
 
-module.exports = auth;
+module.exports = { auth };

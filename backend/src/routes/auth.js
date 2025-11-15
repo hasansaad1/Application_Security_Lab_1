@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const path = require('path');
 
 const config = require("../config");
+const { auth } = require("../middleware/auth");
 const { uploadProfilePicture } = require("../middleware/upload/profilePicture");
 const userService = require("../services/user");
 
@@ -19,7 +20,8 @@ const COOKIE_SETTINGS = {
 
 function signToken(user) {
   return jwt.sign({
-      id: user.id,
+      sub: user.id,
+      email: user.email,
       role: user.role,
     }, config.auth.jwtSecret, { expiresIn: config.auth.jwtExpiresIn }
   );
@@ -73,7 +75,7 @@ router.post("/register", uploadProfilePicture, async (req, res) => {
   }
 });
 
-router.post("/login",  async (req, res) => {
+router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     
@@ -97,6 +99,20 @@ router.post("/login",  async (req, res) => {
         user: user.toJSON()
       }
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.get("/me", auth(), async (req, res) => {
+  try {
+    const user = await userService.getUserByEmail(req.user.email);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    };
+
+    res.json({ data: { user } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
