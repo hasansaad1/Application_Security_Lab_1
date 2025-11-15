@@ -119,4 +119,10 @@ router.get("/me", auth(), async (req, res) => {
   }
 });
 
+router.post("/logout", async (req, res) => {
+  const { maxAge, ...settings } =  COOKIE_SETTINGS;
+  res.clearCookie('token', settings);
+  return res.json({ success: true });
+});
+
 module.exports = router;
