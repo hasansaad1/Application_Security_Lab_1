@@ -56,9 +56,11 @@ services:
       - NODE_ENV=development
       - CORS_ORIGIN=https://localhost
       - ENCRYPTION_KEY=/run/secrets/enc-key
+      - JWT_SECRET=/run/secrets/jwt-secret
     secrets:
       - db-password
       - enc-key
+      - jwt-secret
     volumes:
       - back-notused:/opt/app/node_modules
     networks:
@@ -108,3 +110,5 @@ secrets:
     file: db/password.txt
   enc-key:
     file: db/enc_key.txt
+  jwt-secret:
+    file

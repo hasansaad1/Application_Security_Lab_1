@@ -2,7 +2,7 @@ const express = require("express");
 const morgan = require("morgan");
 const helmet = require("helmet");
 const cors = require("cors");
-const db = require("./db");
+const cookieParser = require('cookie-parser');
 const app = express();
 
 const userRoutes = require("./routes/user");
@@ -21,6 +21,8 @@ app.use(
     credentials: true,
   })
 );
+
+app.use(cookieParser());
 
 // Check server 
 app.get("/health", function(req, res) {
