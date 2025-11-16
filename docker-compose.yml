@@ -17,15 +17,13 @@ services:
       target: development
     ports:
       - "3000:3000"  # Exposed for standalone development
-    volumes:
-      - /code/node_modules
     networks:
       - public
     environment:
       NODE_ENV: development
       # Uncomment polling if file changes aren't detected on your host
-      # WATCHPACK_POLLING: "true"
-      # CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
     develop:
       watch:
         - path: ./frontend

@@ -82,7 +82,7 @@ router.post("/login", async (req, res) => {
     /* Validations */
     const user = await userService.getUserByEmail(email);
     if (!user) {
-      return res.status(401).json({ error: 'Not found' });
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const validCredentials = await bcrypt.compare(password, user.password_hash);
