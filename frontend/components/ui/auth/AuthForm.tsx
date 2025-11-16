@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
     UserIcon,
     EnvelopeIcon,
@@ -29,6 +29,8 @@ type AuthFormProps = {
 
 export function AuthForm({ mode }: AuthFormProps) {
     const router = useRouter();
+    const searchParams = useSearchParams();
+
     const isRegister = mode === "register";
 
     const [formState, setFormState] = useState({
@@ -171,7 +173,8 @@ export function AuthForm({ mode }: AuthFormProps) {
                     return;
                 }
 
-                router.push("/");
+                const redirectTo = searchParams.get("from") ?? "/";
+                router.replace(redirectTo);
             }
         } catch (err) {
             console.error(err);
