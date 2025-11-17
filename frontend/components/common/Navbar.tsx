@@ -6,7 +6,9 @@ import { useEffect, useRef, useState } from "react";
 import {
     HeartIcon,
     ChevronDownIcon,
+    PlusIcon,
 } from "@heroicons/react/24/outline";
+import { CreateListingModal } from "@/components/listings/CreateListingModal";
 
 type User = {
     id?: string;
@@ -24,6 +26,7 @@ export function Navbar({ user }: NavbarProps) {
 
     const [menuOpen, setMenuOpen] = useState(false);
     const [signingOut, setSigningOut] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -91,6 +94,15 @@ export function Navbar({ user }: NavbarProps) {
 
                 {/* Right */}
                 <div className="flex items-center gap-4">
+                    {/* Create Listing Button */}
+                    <button
+                        type="button"
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors"
+                    >
+                        <PlusIcon className="h-5 w-5" />
+                        <span className="hidden sm:inline">Create Listing</span>
+                    </button>
 
                     {/* Favorites */}
                     <Link
@@ -161,6 +173,19 @@ export function Navbar({ user }: NavbarProps) {
                     </div>
                 </div>
             </div>
+
+            {/* Create Listing Modal */}
+            {user.id && (
+                <CreateListingModal
+                    isOpen={isCreateModalOpen}
+                    onClose={() => setIsCreateModalOpen(false)}
+                    userId={user.id}
+                    onSuccess={() => {
+                        // Refresh the page to show the new listing
+                        router.refresh();
+                    }}
+                />
+            )}
         </header>
     );
 }
