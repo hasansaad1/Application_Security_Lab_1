@@ -97,11 +97,60 @@ async function getListingsByOwner(ownerId) {
   return rows.map(r => new Listing(r));
 }
 
+// Update listing by ID
+async function updateListing(id, updates) {
+  // Build dynamic UPDATE query based on provided fields
+  const allowedFields = [
+    'title', 'description', 'price', 'address_country', 'address_province',
+    'address_city', 'address_zip_code', 'address_line1', 'address_line2', 'is_available'
+  ];
+  
+  const fields = [];
+  const values = [];
+  
+  for (const field of allowedFields) {
+    if (updates[field] !== undefined) {
+      fields.push(`${field} = ?`);
+      values.push(updates[field]);
+    }
+  }
+  
+  if (fields.length === 0) {
+    throw new Error("No valid fields to update");
+  }
+  
+  values.push(id);
+  
+  const [result] = await pool.query(
+    `UPDATE Listings SET ${fields.join(', ')} WHERE id = ?`,
+    values
+  );
+  
+  if (result.affectedRows === 0) {
+    throw new Error("Listing not found");
+  }
+  
+  return await getListingById(id);
+}
+
+// Delete listing by ID
+async function deleteListing(id) {
+  const [result] = await pool.query("DELETE FROM Listings WHERE id = ?", [id]);
+  
+  if (result.affectedRows === 0) {
+    throw new Error("Listing not found");
+  }
+  
+  return true;
+}
+
 module.exports = {
   Listing,
   getListings,
   getListingById,
   createListing,
   getPhoneNumber,
-  getListingsByOwner
+  getListingsByOwner,
+  updateListing,
+  deleteListing
 };
