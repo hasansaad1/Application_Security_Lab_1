@@ -25,7 +25,18 @@ class Listing {
 // Get all listings
 async function getListings() {
   const [rows] = await pool.query("SELECT * FROM Listings;");
-  return rows.map(r => new Listing(r));
+  const listings = rows.map(r => new Listing(r));
+  
+  // Fetch images for each listing
+  for (const listing of listings) {
+    const [images] = await pool.query(
+      "SELECT path FROM ListingsImages WHERE listing_id = ?;",
+      [listing.id]
+    );
+    listing.images = images;
+  }
+  
+  return listings;
 }
 
 // Get listing by ID
