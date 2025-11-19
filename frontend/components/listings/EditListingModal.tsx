@@ -42,8 +42,8 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
         is_available: listing.is_available ?? true,
     });
 
-    const [imageFile, setImageFile] = useState<File | null>(null);
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [imageFiles, setImageFiles] = useState<File[]>([]);
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
     const [errors, setErrors] = useState<FormErrors>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -73,9 +73,11 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                 address_line2: listing.address_line2 || "",
                 is_available: listing.is_available ?? true,
             });
-            // Set preview to existing image if available
+            // Set previews to existing images if available
             if (listing.images && listing.images.length > 0) {
-                setImagePreview(getImageUrl(listing.images[0].path));
+                setImagePreviews(listing.images.map(img => getImageUrl(img.path)));
+            } else {
+                setImagePreviews([]);
             }
         }
     }, [listing]);
@@ -83,8 +85,12 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
     // Reset form when modal closes
     useEffect(() => {
         if (!isOpen) {
-            setImageFile(null);
-            setImagePreview(listing.images && listing.images.length > 0 ? getImageUrl(listing.images[0].path) : null);
+            setImageFiles([]);
+            if (listing.images && listing.images.length > 0) {
+                setImagePreviews(listing.images.map(img => getImageUrl(img.path)));
+            } else {
+                setImagePreviews([]);
+            }
             setErrors({});
         }
     }, [isOpen, listing]);
@@ -132,14 +138,41 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
     };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setImageFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
+        const files = Array.from(e.target.files || []);
+        if (files.length > 0) {
+            // Limit to 10 images total (existing + new)
+            const existingCount = imagePreviews.length;
+            const filesToAdd = files.slice(0, 10 - existingCount);
+            setImageFiles((prev) => [...prev, ...filesToAdd]);
+            
+            // Create previews for new files
+            filesToAdd.forEach((file) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setImagePreviews((prev) => [...prev, reader.result as string]);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        // Reset the input value so the same files can be selected again if needed
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
+    const removeImage = (index: number) => {
+        // Check if this is an existing image (from listing) or a new file
+        const existingImageCount = listing.images?.length || 0;
+        
+        if (index < existingImageCount) {
+            // This is an existing image - just remove from preview
+            // Note: Backend would need to support image deletion separately
+            setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+        } else {
+            // This is a newly added file
+            const fileIndex = index - existingImageCount;
+            setImageFiles((prev) => prev.filter((_, i) => i !== fileIndex));
+            setImagePreviews((prev) => prev.filter((_, i) => i !== index));
         }
     };
 
@@ -173,33 +206,45 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
         setIsSubmitting(true);
 
         try {
-            const payload: any = {
-                title: formData.title.trim(),
-                description: formData.description.trim() || null,
-                price: parseFloat(formData.price),
-                address_country: formData.address_country.trim() || null,
-                address_province: formData.address_province.trim() || null,
-                address_city: formData.address_city.trim() || null,
-                address_zip_code: formData.address_zip_code.trim() || null,
-                address_line1: formData.address_line1.trim() || null,
-                address_line2: formData.address_line2.trim() || null,
-                is_available: formData.is_available,
-            };
+            // Create FormData for multipart/form-data upload (to support images)
+            const formDataToSend = new FormData();
+            formDataToSend.append("title", formData.title.trim());
+            if (formData.description.trim()) {
+                formDataToSend.append("description", formData.description.trim());
+            }
+            formDataToSend.append("price", formData.price);
+            if (formData.address_country.trim()) {
+                formDataToSend.append("address_country", formData.address_country.trim());
+            }
+            if (formData.address_province.trim()) {
+                formDataToSend.append("address_province", formData.address_province.trim());
+            }
+            if (formData.address_city.trim()) {
+                formDataToSend.append("address_city", formData.address_city.trim());
+            }
+            if (formData.address_zip_code.trim()) {
+                formDataToSend.append("address_zip_code", formData.address_zip_code.trim());
+            }
+            if (formData.address_line1.trim()) {
+                formDataToSend.append("address_line1", formData.address_line1.trim());
+            }
+            if (formData.address_line2.trim()) {
+                formDataToSend.append("address_line2", formData.address_line2.trim());
+            }
+            // Always include is_available, even if false
+            // Send as string "true" or "false" for FormData
+            formDataToSend.append("is_available", formData.is_available ? "true" : "false");
+            console.log("Sending is_available:", formData.is_available, "as:", formData.is_available ? "true" : "false");
 
-            // Only include fields that have values
-            Object.keys(payload).forEach((key) => {
-                if (payload[key] === null || payload[key] === "") {
-                    delete payload[key];
-                }
+            // Append new images
+            imageFiles.forEach((file) => {
+                formDataToSend.append("images", file);
             });
 
             const res = await fetch(`https://localhost/api/listings/${listing.id}`, {
                 method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
                 credentials: "include",
-                body: JSON.stringify(payload),
+                body: formDataToSend, // Don't set Content-Type header - browser will set it with boundary
             });
 
             if (!res.ok) {
@@ -254,7 +299,7 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                             name="title"
                             value={formData.title}
                             onChange={handleChange}
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                            className={`w-full px-3 py-2 border rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                                 errors.title ? "border-red-500" : "border-gray-300"
                             }`}
                             placeholder="e.g., Cozy Downtown Apartment"
@@ -273,7 +318,7 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                             value={formData.description}
                             onChange={handleChange}
                             rows={4}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             placeholder="Describe your property..."
                         />
                     </div>
@@ -291,7 +336,7 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                             onChange={handleChange}
                             min="0"
                             step="0.01"
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                            className={`w-full px-3 py-2 border rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                                 errors.price ? "border-red-500" : "border-gray-300"
                             }`}
                             placeholder="1200.00"
@@ -314,7 +359,7 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                                     name="address_country"
                                     value={formData.address_country}
                                     onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     placeholder="USA"
                                 />
                             </div>
@@ -329,7 +374,7 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                                     name="address_province"
                                     value={formData.address_province}
                                     onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     placeholder="California"
                                 />
                             </div>
@@ -346,7 +391,7 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                                     name="address_city"
                                     value={formData.address_city}
                                     onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     placeholder="Los Angeles"
                                 />
                             </div>
@@ -361,7 +406,7 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                                     name="address_zip_code"
                                     value={formData.address_zip_code}
                                     onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     placeholder="90001"
                                 />
                             </div>
@@ -377,7 +422,7 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                                 name="address_line1"
                                 value={formData.address_line1}
                                 onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 placeholder="123 Main St"
                             />
                         </div>
@@ -392,44 +437,62 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                                 name="address_line2"
                                 value={formData.address_line2}
                                 onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 placeholder="Apt 4B"
                             />
                         </div>
                     </div>
 
-                    {/* Image Upload (UI only, not sent) */}
+                    {/* Image Upload */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Property Image (optional)
+                            Property Images (optional, up to 10)
                         </label>
-                        <div className="mt-1 flex items-center gap-4">
+                        <div className="mt-1">
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                                disabled={imagePreviews.length >= 10}
+                                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <PhotoIcon className="h-5 w-5" />
-                                {imageFile ? "Change Image" : "Choose Image"}
+                                {imagePreviews.length > 0 ? "Add More Images" : "Choose Images"}
                             </button>
                             <input
                                 ref={fileInputRef}
                                 type="file"
                                 accept="image/*"
+                                multiple
                                 onChange={handleImageChange}
                                 className="hidden"
                             />
-                            {imagePreview && (
-                                <div className="relative">
-                                    <img
-                                        src={imagePreview}
-                                        alt="Preview"
-                                        className="h-20 w-20 object-cover rounded-md border border-gray-300"
-                                    />
+                            {imagePreviews.length > 0 && (
+                                <div className="mt-3 grid grid-cols-4 gap-3">
+                                    {imagePreviews.map((preview, index) => (
+                                        <div key={index} className="relative group">
+                                            <img
+                                                src={preview}
+                                                alt={`Preview ${index + 1}`}
+                                                className="h-24 w-full object-cover rounded-md border border-gray-300"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeImage(index)}
+                                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                aria-label="Remove image"
+                                            >
+                                                <XMarkIcon className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    ))}
                                 </div>
                             )}
                         </div>
-                        <p className="mt-1 text-xs text-gray-500">Image upload will be implemented later</p>
+                        <p className="mt-1 text-xs text-gray-500">
+                            {imagePreviews.length > 0 
+                                ? `${imagePreviews.length} image${imagePreviews.length > 1 ? 's' : ''} selected. ${imagePreviews.length < 10 ? `You can add ${10 - imagePreviews.length} more.` : 'Maximum reached.'}`
+                                : 'Select up to 10 images (JPG, PNG, max 5MB each)'}
+                        </p>
                     </div>
 
                     {/* Availability */}

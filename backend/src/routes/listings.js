@@ -241,7 +241,7 @@ router.get("/:id/phone", async (req, res) => {
 });
 
 // Update listing by id (owner only)
-router.put("/:id", auth(), async (req, res) => {
+router.put("/:id", auth(), uploadListingImages, async (req, res) => {
   try {
     const id = validateInteger(req.params.id, 1);
     if (!id) {
@@ -305,7 +305,20 @@ router.put("/:id", auth(), async (req, res) => {
     }
 
     if (req.body.is_available !== undefined) {
-      updates.is_available = validateBoolean(req.body.is_available);
+      console.log(`[UPDATE LISTING] is_available received: ${req.body.is_available}, type: ${typeof req.body.is_available}`);
+      const availableValue = validateBoolean(req.body.is_available);
+      console.log(`[UPDATE LISTING] is_available parsed: ${availableValue}`);
+      updates.is_available = availableValue;
+    } else {
+      console.log(`[UPDATE LISTING] is_available not provided in request body`);
+    }
+
+    // Handle image uploads if provided
+    if (req.files && req.files.length > 0) {
+      const imagePaths = req.files.map(file =>
+        path.relative(config.uploads.root, file.path)
+      );
+      await saveListingImages(id, imagePaths);
     }
 
     // Update the listing
@@ -324,7 +337,7 @@ router.put("/:id", auth(), async (req, res) => {
     }
     res.status(500).json({ error: "Internal server error" });
   }
-});
+}, uploadErrorHandler);
 
 // Delete listing by id (owner only)
 router.delete("/:id", auth(), async (req, res) => {
