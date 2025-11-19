@@ -127,6 +127,11 @@ export function CreateListingModal({ isOpen, onClose, userId, onSuccess }: Creat
                 reader.readAsDataURL(file);
             });
         }
+        // Reset the input value so the same files can be selected again if needed
+        // This also allows selecting more files after the first selection
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
     };
 
     const removeImage = (index: number) => {
@@ -255,7 +260,7 @@ export function CreateListingModal({ isOpen, onClose, userId, onSuccess }: Creat
                             name="title"
                             value={formData.title}
                             onChange={handleChange}
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                            className={`w-full px-3 py-2 border rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                                 errors.title ? "border-red-500" : "border-gray-300"
                             }`}
                             placeholder="e.g., Cozy Downtown Apartment"
@@ -274,7 +279,7 @@ export function CreateListingModal({ isOpen, onClose, userId, onSuccess }: Creat
                             value={formData.description}
                             onChange={handleChange}
                             rows={4}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             placeholder="Describe your property..."
                         />
                     </div>
@@ -292,7 +297,7 @@ export function CreateListingModal({ isOpen, onClose, userId, onSuccess }: Creat
                             onChange={handleChange}
                             min="0"
                             step="0.01"
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                            className={`w-full px-3 py-2 border rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                                 errors.price ? "border-red-500" : "border-gray-300"
                             }`}
                             placeholder="1200.00"
@@ -315,7 +320,7 @@ export function CreateListingModal({ isOpen, onClose, userId, onSuccess }: Creat
                                     name="address_country"
                                     value={formData.address_country}
                                     onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     placeholder="USA"
                                 />
                             </div>
@@ -330,7 +335,7 @@ export function CreateListingModal({ isOpen, onClose, userId, onSuccess }: Creat
                                     name="address_province"
                                     value={formData.address_province}
                                     onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     placeholder="California"
                                 />
                             </div>
@@ -347,7 +352,7 @@ export function CreateListingModal({ isOpen, onClose, userId, onSuccess }: Creat
                                     name="address_city"
                                     value={formData.address_city}
                                     onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     placeholder="Los Angeles"
                                 />
                             </div>
@@ -362,7 +367,7 @@ export function CreateListingModal({ isOpen, onClose, userId, onSuccess }: Creat
                                     name="address_zip_code"
                                     value={formData.address_zip_code}
                                     onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     placeholder="90001"
                                 />
                             </div>
@@ -378,7 +383,7 @@ export function CreateListingModal({ isOpen, onClose, userId, onSuccess }: Creat
                                 name="address_line1"
                                 value={formData.address_line1}
                                 onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 placeholder="123 Main St"
                             />
                         </div>
@@ -393,7 +398,7 @@ export function CreateListingModal({ isOpen, onClose, userId, onSuccess }: Creat
                                 name="address_line2"
                                 value={formData.address_line2}
                                 onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 placeholder="Apt 4B"
                             />
                         </div>

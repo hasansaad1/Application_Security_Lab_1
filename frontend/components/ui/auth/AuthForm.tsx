@@ -132,7 +132,6 @@ export function AuthForm({ mode }: AuthFormProps) {
                 formData.append("email", formState.email);
                 formData.append("password", formState.password);
                 formData.append("phone_number", formState.phone_number);
-                formData.append("role", "tenant");
 
                 if (profilePictureFile) {
                     // backend field name "avatar" – change if your API expects another name
@@ -253,7 +252,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                                 required
                                 value={formState.username}
                                 onChange={handleFormChange}
-                                className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                                 placeholder="Your username"
                             />
                         </div>
@@ -284,7 +283,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                         required
                         value={formState.email}
                         onChange={handleFormChange}
-                        className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                         placeholder="user@homigo.com"
                     />
                 </div>
@@ -314,8 +313,8 @@ export function AuthForm({ mode }: AuthFormProps) {
                             required
                             value={formState.phone_number}
                             onChange={handleFormChange}
-                            className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                            placeholder="+34 111 111 111"
+                            className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            placeholder="+1 234 567 8900 or 1234567890"
                         />
                     </div>
                 </div>
@@ -344,7 +343,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                         required
                         value={formState.password}
                         onChange={handleFormChange}
-                        className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-10 text-sm shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                         placeholder={isRegister ? "Create a strong password" : "Your password"}
                     />
                     {/* Visibility toggle */}
@@ -392,7 +391,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                             required
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className={`block w-full rounded-lg border bg-white py-2.5 pl-10 pr-10 text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 ${confirmPassword.length === 0
+                            className={`block w-full rounded-lg border bg-white py-2.5 pl-10 pr-10 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 ${confirmPassword.length === 0
                                 ? "border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
                                 : confirmPassword === formState.password
                                     ? "border-green-400 focus:border-green-500 focus:ring-green-500"

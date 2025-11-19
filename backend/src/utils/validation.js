@@ -42,19 +42,14 @@ function validatePassword(password) {
   return password.length >= 8 && /[a-zA-Z]/.test(password) && /[0-9]/.test(password);
 }
 
-// Validate role
-function validateRole(role) {
-  const validRoles = ['admin', 'landlord', 'tenant'];
-  return validRoles.includes(role);
-}
-
-// Validate phone number (basic format)
+// Validate phone number (flexible international format)
 function validatePhoneNumber(phone) {
   if (typeof phone !== 'string') return false;
-  // Remove common formatting characters
-  const cleaned = phone.replace(/[\s\-\(\)]/g, '');
-  // Should be 10-15 digits
-  return /^\d{10,15}$/.test(cleaned);
+  // Remove common formatting characters and plus signs
+  const cleaned = phone.replace(/[\s\-\(\)\+\.]/g, ''); // Remove spaces, dashes, parentheses, plus signs, and dots
+  // Should be 7-20 digits (supports international formats)
+  if (!/^\d{7,20}$/.test(cleaned)) return false;
+  return true;
 }
 
 // Validate string length
@@ -136,7 +131,6 @@ module.exports = {
   validateEmail,
   validateUsername,
   validatePassword,
-  validateRole,
   validatePhoneNumber,
   validateLength,
   validateNumber,

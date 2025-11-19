@@ -11,7 +11,6 @@ const {
   validateEmail,
   validateUsername,
   validatePassword,
-  validateRole,
   validatePhoneNumber,
   sanitizeString,
 } = require("../utils/validation");
@@ -30,18 +29,17 @@ function signToken(user) {
   return jwt.sign({
       sub: user.id,
       email: user.email,
-      role: user.role,
     }, config.auth.jwtSecret, { expiresIn: config.auth.jwtExpiresIn }
   );
 };
 
 router.post("/register", uploadProfilePicture, async (req, res) => {
   try {
-    const { username, email, password, role, phone_number } = req.body;
+    const { username, email, password, phone_number } = req.body;
 
     /* Validations */
-    if (!username || !email || !password || !role || !phone_number) {
-      return res.status(400).json({ error: "Missing required fields: username, email, password, role, phone_number" });
+    if (!username || !email || !password || !phone_number) {
+      return res.status(400).json({ error: "Missing required fields: username, email, password, phone_number" });
     }
 
     // Validate and sanitize inputs
@@ -61,12 +59,8 @@ router.post("/register", uploadProfilePicture, async (req, res) => {
       return res.status(400).json({ error: "Password must be at least 8 characters and contain both letters and numbers" });
     }
 
-    if (!validateRole(role)) {
-      return res.status(400).json({ error: "Invalid role. Must be one of: admin, landlord, tenant" });
-    }
-
     if (!validatePhoneNumber(sanitizedPhone)) {
-      return res.status(400).json({ error: "Invalid phone number format" });
+      return res.status(400).json({ error: "Invalid phone number format. Phone number must contain 7-20 digits (e.g., +1 234 567 8900 or 1234567890)" });
     }
     
     /* Save profile picture if included */
@@ -83,7 +77,6 @@ router.post("/register", uploadProfilePicture, async (req, res) => {
         username: sanitizedUsername,
         email: sanitizedEmail,
         password_hash,
-        role,
         profile_picture_path,
         phone_number: sanitizedPhone
     });
@@ -132,7 +125,13 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const validCredentials = await bcrypt.compare(password, user.password_hash);
+    let validCredentials = false;
+    try {
+      validCredentials = await bcrypt.compare(password, user.password_hash);
+    } catch (bcryptErr) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
     if (!validCredentials) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
