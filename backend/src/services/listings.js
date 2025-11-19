@@ -139,7 +139,18 @@ async function getPhoneNumber(listing_id) {
 // Get listings by owner
 async function getListingsByOwner(ownerId) {
   const [rows] = await pool.query(`SELECT * FROM Listings WHERE owner_id = ?`, [ownerId]);
-  return rows.map(r => new Listing(r));
+  const listings = rows.map(r => new Listing(r));
+  
+  // Fetch images for each listing
+  for (const listing of listings) {
+    const [images] = await pool.query(
+      "SELECT path FROM ListingsImages WHERE listing_id = ?;",
+      [listing.id]
+    );
+    listing.images = images;
+  }
+  
+  return listings;
 }
 
 // Update listing by ID
@@ -180,6 +191,14 @@ async function updateListing(id, updates) {
 
 // Delete listing by ID
 async function deleteListing(id) {
+  // First, delete all related records that reference this listing
+  // Delete from ListingFollowers (favorites)
+  await pool.query("DELETE FROM ListingFollowers WHERE listing_id = ?", [id]);
+  
+  // Delete from ListingsImages
+  await pool.query("DELETE FROM ListingsImages WHERE listing_id = ?", [id]);
+  
+  // Finally, delete the listing itself
   const [result] = await pool.query("DELETE FROM Listings WHERE id = ?", [id]);
   
   if (result.affectedRows === 0) {
