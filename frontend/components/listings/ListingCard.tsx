@@ -106,23 +106,23 @@ export function ListingCard({ listing, userId, onFavoriteRemoved }: ListingCardP
     return (
         <Link
             href={`/listings/${listing.id}`}
-            className="group block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden border border-gray-200"
+            className="group block bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-rose-100/40 active:scale-[0.98] hover:border-rose-200/60 hover:shadow-rose-200/20"
         >
             {/* Image */}
-            <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
+            <div className="relative aspect-[4/3] bg-gradient-to-br from-rose-50 via-pink-50 to-rose-100 overflow-hidden">
                 {mainImage ? (
                     <img
                         src={mainImage}
                         alt={listing.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                        <span className="text-gray-400 text-sm">No image</span>
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-rose-50 via-pink-50 to-rose-100">
+                        <span className="text-rose-300 text-sm font-medium">No image</span>
                     </div>
                 )}
                 {!listing.is_available && (
-                    <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded">
+                    <div className="absolute top-3 right-3 bg-gray-900/90 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm shadow-lg">
                         Unavailable
                     </div>
                 )}
@@ -132,41 +132,40 @@ export function ListingCard({ listing, userId, onFavoriteRemoved }: ListingCardP
                         type="button"
                         onClick={handleFavoriteToggle}
                         disabled={isToggling}
-                        className="absolute top-3 left-3 p-2 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                        className="absolute top-3 left-3 p-2.5 rounded-full bg-white/95 backdrop-blur-md hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg active:scale-90 border-2 border-rose-200/50"
                         aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
                     >
                         {isFavorited ? (
                             <HeartIconSolid className="h-5 w-5 text-rose-500" />
                         ) : (
-                            <HeartIcon className="h-5 w-5 text-gray-600" />
+                            <HeartIcon className="h-5 w-5 text-gray-500" />
                         )}
                     </button>
                 )}
             </div>
 
             {/* Content */}
-            <div className="p-4">
+            <div className="p-5 space-y-3 bg-gradient-to-b from-white via-rose-50/20 to-white">
                 {/* Title */}
-                <h3 className="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors mb-2 line-clamp-1">
+                <h3 className="text-base font-bold text-gray-900 group-hover:text-rose-600 transition-colors line-clamp-1">
                     {listing.title}
                 </h3>
 
                 {/* Description */}
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2 min-h-[2.5rem]">
+                <p className="text-sm text-gray-600 line-clamp-2 min-h-[2.5rem] leading-relaxed">
                     {truncateDescription(listing.description)}
                 </p>
 
                 {/* Location */}
-                <div className="flex items-center gap-1 text-sm text-gray-500 mb-3">
-                    <MapPinIcon className="h-4 w-4 flex-shrink-0" />
+                <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                    <MapPinIcon className="h-3.5 w-3.5 flex-shrink-0" />
                     <span className="line-clamp-1">{formatLocation()}</span>
                 </div>
 
                 {/* Price */}
-                <div className="flex items-center gap-1 text-lg font-bold text-indigo-600">
-                    <CurrencyDollarIcon className="h-5 w-5" />
-                    <span>{formatPrice(listing.price)}</span>
-                    <span className="text-sm font-normal text-gray-500">/month</span>
+                <div className="flex items-baseline gap-1 pt-2 border-t-2 border-rose-100">
+                    <span className="text-xl font-bold text-gray-900">{formatPrice(listing.price)}</span>
+                    <span className="text-xs font-normal text-gray-500">/month</span>
                 </div>
             </div>
         </Link>

@@ -161,7 +161,7 @@ export function MyListingsContent() {
                                     <span className="line-clamp-1">{formatLocation(listing)}</span>
                                 </div>
 
-                                <div className="text-lg font-bold text-indigo-600 mb-4">
+                                <div className="text-lg font-bold text-rose-600 mb-4">
                                     {formatPrice(listing.price)}/month
                                 </div>
 
@@ -170,7 +170,7 @@ export function MyListingsContent() {
                                     <button
                                         type="button"
                                         onClick={() => setEditingListing(listing)}
-                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-md hover:bg-indigo-100 transition-colors"
+                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-rose-600 bg-rose-50 rounded-md hover:bg-rose-100 transition-colors"
                                     >
                                         <PencilIcon className="h-4 w-4" />
                                         Edit

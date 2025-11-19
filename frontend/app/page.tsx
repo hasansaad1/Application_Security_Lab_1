@@ -15,7 +15,7 @@ export default async function HomePage() {
     const result = await getListings();
 
     return (
-        <div className="flex min-h-screen flex-col bg-gray-50">
+        <div className="flex min-h-screen flex-col bg-gradient-to-b from-rose-50/20 via-rose-50/5 to-rose-50/10 relative">
             <Navbar user={user as { id?: string; username?: string; email?: string; profilePictureUrl?: string }} />
             <main className="flex-1">
                 <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -29,9 +29,9 @@ export default async function HomePage() {
                         </p>
                     </div>
 
-                    {/* Listings Grid */}
+                    {/* Listings Grid - 3 per row */}
                     {result.listings.length > 0 ? (
-                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-3">
                             {result.listings.map((listing) => (
                                 <ListingCard key={listing.id} listing={listing} userId={user.id} />
                             ))}

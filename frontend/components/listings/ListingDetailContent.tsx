@@ -97,20 +97,20 @@ export function ListingDetailContent({ listing, userId }: ListingDetailContentPr
     const mainImage = images.length > 0 ? getImageUrl(images[currentImageIndex].path) : null;
 
     return (
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-            {/* Back Button */}
-            <button
-                onClick={() => router.back()}
-                className="mb-3 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
-            >
-                ← Back to listings
-            </button>
+            <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+                {/* Back Button */}
+                <button
+                    onClick={() => router.back()}
+                    className="mb-3 text-sm text-rose-600 hover:text-rose-700 font-medium transition-colors"
+                >
+                    ← Back to listings
+                </button>
 
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+                <div className="bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-rose-100/40">
                 {/* Desktop: Two-column layout, Mobile: Stacked */}
                 <div className="lg:flex lg:flex-row">
                     {/* Left Column: Images */}
-                    <div className="lg:w-1/2 lg:border-r lg:border-gray-200 flex flex-col items-center">
+                    <div className="lg:w-1/2 lg:border-r lg:border-rose-100 flex flex-col items-center bg-gradient-to-br from-rose-50/30 to-white">
                         {/* Main Image */}
                         <div className="relative w-full max-w-md mx-auto">
                             <div className="aspect-[4/3] lg:aspect-[3/2] bg-gray-100 overflow-hidden max-h-[350px]">
@@ -225,8 +225,8 @@ export function ListingDetailContent({ listing, userId }: ListingDetailContentPr
                                         onClick={() => setCurrentImageIndex(index)}
                                         className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                                             index === currentImageIndex
-                                                ? "border-indigo-500 ring-2 ring-indigo-200"
-                                                : "border-gray-200 hover:border-indigo-300"
+                                                ? "border-rose-500 ring-2 ring-rose-200"
+                                                : "border-gray-200 hover:border-rose-300"
                                         }`}
                                     >
                                         <img
@@ -241,7 +241,7 @@ export function ListingDetailContent({ listing, userId }: ListingDetailContentPr
                     </div>
 
                     {/* Right Column: Details */}
-                    <div className="lg:w-1/2">
+                    <div className="lg:w-1/2 bg-gradient-to-br from-white to-rose-50/20">
                         <div className="p-3 lg:p-4">
                             {/* Header */}
                             <div className="mb-3">
@@ -261,16 +261,16 @@ export function ListingDetailContent({ listing, userId }: ListingDetailContentPr
                             </div>
 
                             {/* Price - Prominent */}
-                            <div className="mb-4 p-3 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg border border-indigo-200">
-                                <div className="flex items-center gap-2">
-                                    <CurrencyDollarIcon className="h-6 w-6 text-indigo-600 flex-shrink-0" />
+                            <div className="mb-4 p-4 bg-gradient-to-br from-gray-50 via-rose-50/30 to-gray-50 rounded-xl border-2 border-rose-100/50 shadow-md">
+                                <div className="flex items-center gap-3">
+                                    <CurrencyDollarIcon className="h-7 w-7 text-gray-700 flex-shrink-0" />
                                     <div>
-                                        <div className="text-xs text-indigo-700 font-medium mb-0.5">
+                                        <div className="text-xs text-gray-600 font-medium mb-1">
                                             Monthly Rent
                                         </div>
-                                        <div className="text-2xl font-bold text-indigo-900">
+                                        <div className="text-2xl font-bold text-gray-900">
                                             {formatPrice(listing.price)}
-                                            <span className="text-base font-normal text-indigo-600 ml-1">
+                                            <span className="text-base font-normal text-gray-600 ml-1">
                                                 /month
                                             </span>
                                         </div>
@@ -293,8 +293,8 @@ export function ListingDetailContent({ listing, userId }: ListingDetailContentPr
                             {/* Location */}
                             <div className="mb-4">
                                 <h2 className="text-base font-semibold text-gray-900 mb-1.5">Location</h2>
-                                <div className="flex items-start gap-2 p-2 bg-gray-50 rounded-lg">
-                                    <MapPinIcon className="h-4 w-4 text-indigo-600 flex-shrink-0 mt-0.5" />
+                                <div className="flex items-start gap-2 p-2 bg-rose-50/50 rounded-xl border border-rose-100/50">
+                                    <MapPinIcon className="h-4 w-4 text-rose-600 flex-shrink-0 mt-0.5" />
                                     <p className="text-gray-700 leading-relaxed text-sm">{formatAddress()}</p>
                                 </div>
                             </div>
@@ -312,7 +312,7 @@ export function ListingDetailContent({ listing, userId }: ListingDetailContentPr
                                                 onClick={() => setCurrentImageIndex(index)}
                                                 className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                                                     index === currentImageIndex
-                                                        ? "border-indigo-500 ring-2 ring-indigo-200"
+                                                        ? "border-rose-500 ring-2 ring-rose-200"
                                                         : "border-gray-200 hover:border-gray-300"
                                                 }`}
                                             >

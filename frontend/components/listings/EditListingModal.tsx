@@ -269,10 +269,10 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
 
     return (
         <div 
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
             onClick={handleBackdropClick}
         >
-            <div ref={modalRef} className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div ref={modalRef} className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-amber-100/50">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200">
                     <h2 className="text-xl font-semibold text-gray-900">Edit Listing</h2>
@@ -299,7 +299,7 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                             name="title"
                             value={formData.title}
                             onChange={handleChange}
-                            className={`w-full px-3 py-2 border rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                            className={`w-full px-3 py-2 border rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500 ${
                                 errors.title ? "border-red-500" : "border-gray-300"
                             }`}
                             placeholder="e.g., Cozy Downtown Apartment"
@@ -318,7 +318,7 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                             value={formData.description}
                             onChange={handleChange}
                             rows={4}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500"
                             placeholder="Describe your property..."
                         />
                     </div>
@@ -336,10 +336,13 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                             onChange={handleChange}
                             min="0"
                             step="0.01"
-                            className={`w-full px-3 py-2 border rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                            className={`w-full px-3 py-2 border rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
                                 errors.price ? "border-red-500" : "border-gray-300"
                             }`}
                             placeholder="1200.00"
+                            style={{
+                                MozAppearance: 'textfield'
+                            }}
                         />
                         {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price}</p>}
                     </div>
@@ -359,7 +362,7 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                                     name="address_country"
                                     value={formData.address_country}
                                     onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500"
                                     placeholder="USA"
                                 />
                             </div>
@@ -374,7 +377,7 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                                     name="address_province"
                                     value={formData.address_province}
                                     onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500"
                                     placeholder="California"
                                 />
                             </div>
@@ -391,7 +394,7 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                                     name="address_city"
                                     value={formData.address_city}
                                     onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500"
                                     placeholder="Los Angeles"
                                 />
                             </div>
@@ -406,7 +409,7 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                                     name="address_zip_code"
                                     value={formData.address_zip_code}
                                     onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500"
                                     placeholder="90001"
                                 />
                             </div>
@@ -422,7 +425,7 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                                 name="address_line1"
                                 value={formData.address_line1}
                                 onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500"
                                 placeholder="123 Main St"
                             />
                         </div>
@@ -437,7 +440,7 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                                 name="address_line2"
                                 value={formData.address_line2}
                                 onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500"
                                 placeholder="Apt 4B"
                             />
                         </div>
@@ -503,7 +506,7 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                             name="is_available"
                             checked={formData.is_available}
                             onChange={handleChange}
-                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                            className="h-4 w-4 text-rose-600 focus:ring-rose-500 border-gray-300 rounded"
                         />
                         <label htmlFor="is_available" className="ml-2 text-sm text-gray-700">
                             Available for rent
@@ -529,7 +532,7 @@ export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditLi
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-md hover:bg-rose-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={isSubmitting}
                         >
                             {isSubmitting ? "Saving..." : "Save Changes"}

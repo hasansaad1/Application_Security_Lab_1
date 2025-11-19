@@ -77,18 +77,18 @@ export function Navbar({ user }: NavbarProps) {
 
     return (
         <>
-        <header className="sticky top-0 z-30 bg-white/80 shadow-sm backdrop-blur">
-            <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+        <header className="sticky top-0 z-30 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 shadow-xl backdrop-blur-sm border-b-2 border-rose-500/20">
+            <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
 
                 {/* Left */}
                 <Link
                     href="/"
                     className="flex items-baseline gap-2 group"
                 >
-                    <span className="text-lg font-semibold tracking-tight text-gray-900 group-hover:text-indigo-600 transition-colors">
+                    <span className="text-lg font-bold tracking-tight text-white group-hover:text-rose-300 transition-colors">
                         Homigo
                     </span>
-                    <span className="hidden text-xs text-gray-400 sm:inline">
+                    <span className="hidden text-xs text-gray-300 sm:inline">
                         Find & share apartments
                     </span>
                 </Link>
@@ -99,7 +99,7 @@ export function Navbar({ user }: NavbarProps) {
                     <button
                         type="button"
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors"
+                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-rose-500 rounded-xl hover:bg-rose-600 active:scale-95 transition-all shadow-lg shadow-rose-500/30 border-2 border-rose-400/50"
                     >
                         <PlusIcon className="h-5 w-5" />
                         <span className="hidden sm:inline">Create Listing</span>
@@ -109,7 +109,7 @@ export function Navbar({ user }: NavbarProps) {
                     <Link
                         href="/favorites"
                         aria-label="Favorite listings"
-                        className="inline-flex items-center justify-center p-1.5 text-gray-500 hover:text-rose-500 hover:bg-rose-50 transition-colors rounded-md"
+                        className="inline-flex items-center justify-center p-1.5 text-gray-300 hover:text-rose-400 hover:bg-gray-700/50 transition-colors rounded-xl"
                     >
                         <HeartIcon className="h-5 w-5" />
                     </Link>
@@ -119,9 +119,9 @@ export function Navbar({ user }: NavbarProps) {
                         <button
                             type="button"
                             onClick={() => setMenuOpen((o) => !o)}
-                            className="flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900"
+                            className="flex items-center gap-2 text-sm text-gray-200 hover:text-white"
                         >
-                            <div className="h-8 w-8 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600">
+                            <div className="h-8 w-8 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center text-xs font-medium text-white border-2 border-gray-600">
                                 {profilePictureUrl ? (
                                     <img
                                         src={profilePictureUrl}
@@ -140,32 +140,32 @@ export function Navbar({ user }: NavbarProps) {
 
                         {/* Dropdown */}
                         {menuOpen && (
-                            <div className="absolute right-0 mt-2 w-44 border border-gray-100 bg-white shadow-lg shadow-black/5 z-20">
-                                <div className="py-1 text-sm text-gray-700">
+                            <div className="absolute right-0 mt-2 w-44 border border-gray-200 bg-white shadow-lg shadow-black/10 z-20">
+                                <div className="py-1 text-sm text-gray-900">
                                     <Link
                                         href="/my-listings"
-                                        className="block px-3 py-2 hover:bg-gray-50"
+                                        className="block px-3 py-2 hover:bg-rose-50 hover:text-rose-600 transition-colors font-medium"
                                         onClick={() => setMenuOpen(false)}
                                     >
                                         My listings
                                     </Link>
                                     <Link
                                         href="/profile"
-                                        className="block px-3 py-2 hover:bg-gray-50"
+                                        className="block px-3 py-2 hover:bg-rose-50 hover:text-rose-600 transition-colors font-medium"
                                         onClick={() => setMenuOpen(false)}
                                     >
                                         Profile
                                     </Link>
                                 </div>
-                                <div className="border-t border-gray-100 py-1">
+                                <div className="border-t border-gray-200 py-1">
                                     <button
                                         type="button"
                                         onClick={handleSignOut}
-                                        className="flex w-full items-center justify-between px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                                        className="flex w-full items-center justify-between px-3 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors"
                                     >
                                         <span>Sign out</span>
                                         {signingOut && (
-                                            <span className="text-[10px] text-red-400">...</span>
+                                            <span className="text-[10px] text-rose-400">...</span>
                                         )}
                                     </button>
                                 </div>

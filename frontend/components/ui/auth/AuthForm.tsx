@@ -193,7 +193,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                className="relative h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-dashed border-gray-300 hover:border-indigo-400 hover:bg-indigo-50 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                className="relative h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-dashed border-gray-300 hover:border-rose-400 hover:bg-rose-50 transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"
                             >
                                 {profilePicturePreview ? (
                                     <img
@@ -252,7 +252,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                                 required
                                 value={formState.username}
                                 onChange={handleFormChange}
-                                className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
                                 placeholder="Your username"
                             />
                         </div>
@@ -283,7 +283,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                         required
                         value={formState.email}
                         onChange={handleFormChange}
-                        className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
                         placeholder="user@homigo.com"
                     />
                 </div>
@@ -313,7 +313,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                             required
                             value={formState.phone_number}
                             onChange={handleFormChange}
-                            className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
                             placeholder="+1 234 567 8900 or 1234567890"
                         />
                     </div>
@@ -343,7 +343,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                         required
                         value={formState.password}
                         onChange={handleFormChange}
-                        className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
                         placeholder={isRegister ? "Create a strong password" : "Your password"}
                     />
                     {/* Visibility toggle */}
@@ -392,7 +392,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             className={`block w-full rounded-lg border bg-white py-2.5 pl-10 pr-10 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 ${confirmPassword.length === 0
-                                ? "border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                                ? "border-gray-300 focus:border-rose-500 focus:ring-rose-500"
                                 : confirmPassword === formState.password
                                     ? "border-green-400 focus:border-green-500 focus:ring-green-500"
                                     : "border-red-400 focus:border-red-500 focus:ring-red-500"
@@ -434,7 +434,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             <button
                 type="submit"
                 disabled={loading || (!passwordIsStrong || !passwordsMatch)}
-                className="flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex w-full justify-center rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
                 {loading
                     ? "Please wait..."

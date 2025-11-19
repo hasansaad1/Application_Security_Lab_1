@@ -50,7 +50,7 @@ export function FavoritesContent({ userId }: FavoritesContentProps) {
             {/* Header */}
             <div className="mb-8">
                 <div className="flex items-center gap-3 mb-2">
-                    <HeartIcon className="h-8 w-8 text-rose-500" />
+                    <HeartIcon className="h-8 w-8 text-rose-400" />
                     <h1 className="text-3xl font-bold text-gray-900">My Favorites</h1>
                 </div>
                 <p className="mt-2 text-gray-600">
@@ -60,9 +60,9 @@ export function FavoritesContent({ userId }: FavoritesContentProps) {
                 </p>
             </div>
 
-            {/* Listings Grid */}
+            {/* Listings Grid - 3 per row */}
             {listings.length > 0 ? (
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-3">
                     {listings.map((listing) => (
                         <ListingCard key={listing.id} listing={listing} userId={userId} onFavoriteRemoved={handleFavoriteRemoved} />
                     ))}
