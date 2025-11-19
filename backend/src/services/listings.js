@@ -22,9 +22,22 @@ class Listing {
 
 // Functions
 
-// Get all listings
-async function getListings() {
-  const [rows] = await pool.query("SELECT * FROM Listings;");
+// Get all listings with pagination
+async function getListings(page = 1, limit = 10) {
+  // Validate and normalize pagination parameters
+  const pageNum = Math.max(1, parseInt(page) || 1);
+  const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 10)); // Max 100 items per page
+  const offset = (pageNum - 1) * limitNum;
+
+  // Get total count of listings
+  const [countResult] = await pool.query("SELECT COUNT(*) as total FROM Listings;");
+  const total = countResult[0].total;
+
+  // Get paginated listings
+  const [rows] = await pool.query(
+    "SELECT * FROM Listings ORDER BY publication_date DESC LIMIT ? OFFSET ?;",
+    [limitNum, offset]
+  );
   const listings = rows.map(r => new Listing(r));
   
   // Fetch images for each listing
@@ -36,7 +49,15 @@ async function getListings() {
     listing.images = images;
   }
   
-  return listings;
+  return {
+    listings,
+    pagination: {
+      page: pageNum,
+      limit: limitNum,
+      total,
+      totalPages: Math.ceil(total / limitNum)
+    }
+  };
 }
 
 // Get listing by ID

@@ -12,7 +12,7 @@ export default async function HomePage() {
         redirect("/login?from=/");
     }
 
-    const listings = await getListings();
+    const result = await getListings();
 
     return (
         <div className="flex min-h-screen flex-col bg-gray-50">
@@ -23,16 +23,16 @@ export default async function HomePage() {
                     <div className="mb-8">
                         <h1 className="text-3xl font-bold text-gray-900">Available Listings</h1>
                         <p className="mt-2 text-gray-600">
-                            {listings.length === 0
+                            {result.listings.length === 0
                                 ? "No listings available at the moment"
-                                : `Browse ${listings.length} ${listings.length === 1 ? "listing" : "listings"}`}
+                                : `Showing ${result.listings.length} of ${result.pagination.total} ${result.pagination.total === 1 ? "listing" : "listings"}`}
                         </p>
                     </div>
 
                     {/* Listings Grid */}
-                    {listings.length > 0 ? (
+                    {result.listings.length > 0 ? (
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
-                            {listings.map((listing) => (
+                            {result.listings.map((listing) => (
                                 <ListingCard key={listing.id} listing={listing} userId={user.id} />
                             ))}
                         </div>

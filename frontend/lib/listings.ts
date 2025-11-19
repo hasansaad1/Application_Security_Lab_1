@@ -18,7 +18,17 @@ export type Listing = {
     images?: Array<{ path: string }>;
 };
 
-export async function getListings(): Promise<Listing[]> {
+export type PaginatedListings = {
+    listings: Listing[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+};
+
+export async function getListings(page?: number, limit?: number): Promise<PaginatedListings> {
     const cookieStore = await cookies();
 
     // Build "Cookie" header manually
@@ -27,9 +37,16 @@ export async function getListings(): Promise<Listing[]> {
         .map((c) => `${c.name}=${encodeURIComponent(c.value)}`)
         .join("; ");
 
+    // Build query string
+    const queryParams = new URLSearchParams();
+    if (page !== undefined) queryParams.append("page", page.toString());
+    if (limit !== undefined) queryParams.append("limit", limit.toString());
+    const queryString = queryParams.toString();
+    const url = `http://backend:8080/listings${queryString ? `?${queryString}` : ""}`;
+
     let res: Response;
     try {
-        res = await fetch(`http://backend:8080/listings`, {
+        res = await fetch(url, {
             method: "GET",
             headers: {
                 cookie: cookieHeader,
@@ -39,16 +56,16 @@ export async function getListings(): Promise<Listing[]> {
         });
     } catch (err) {
         console.error("[getListings] fetch to listings backend failed:", err);
-        return [];
+        return { listings: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } };
     }
 
     if (!res.ok) {
         console.error("[getListings] /api/listings returned", res.status);
-        return [];
+        return { listings: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } };
     }
 
-    const listings = await res.json();
-    return listings;
+    const data = await res.json();
+    return data;
 }
 
 export async function getMyListings(): Promise<Listing[]> {

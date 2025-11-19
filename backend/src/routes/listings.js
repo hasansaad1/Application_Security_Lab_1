@@ -5,13 +5,16 @@ const { auth } = require("../middleware/auth");
 const { uploadListingImages } = require("../middleware/upload/listingImages");
 const { uploadErrorHandler } = require("../middleware/upload/errorHandler");
 const config = require("../config");
+const { assertOwner } = require("../utils/ownership");
 const { getListings, getListingById, createListing, getPhoneNumber, getListingsByOwner, updateListing, deleteListing, saveListingImages, isListingFavorited, addToFavorites, removeFromFavorites, getFavoriteListings } = require("../services/listings");
 
-// List all listings
+// List all listings (with pagination)
 router.get("/", async (req, res) => {
   try {
-    const listings = await getListings();
-    res.json(listings);
+    const page = req.query.page;
+    const limit = req.query.limit;
+    const result = await getListings(page, limit);
+    res.json(result);
   } catch (err) {
     console.error("Error fetching listings:", err);
     res.status(500).json({ error: "Internal server error" });
@@ -207,11 +210,8 @@ router.put("/:id", auth(), async (req, res) => {
       return res.status(404).json({ error: "Listing not found" });
     }
 
-    // Check if current user is the owner
-    const currentUserId = req.user.sub;
-    if (listing.owner_id !== currentUserId) {
-      return res.status(403).json({ error: "Forbidden: You are not the owner of this listing" });
-    }
+    // Assert ownership
+    assertOwner(listing.owner_id, req.user.sub, "listing");
 
     // Update the listing
     const updated = await updateListing(id, req.body);
@@ -220,6 +220,9 @@ router.put("/:id", auth(), async (req, res) => {
     console.error("Error updating listing:", err);
     if (err.message === "Listing not found") {
       return res.status(404).json({ error: err.message });
+    }
+    if (err.message === "Forbidden: You are not the owner of this listing") {
+      return res.status(403).json({ error: err.message });
     }
     if (err.message === "No valid fields to update") {
       return res.status(400).json({ error: err.message });
@@ -242,11 +245,8 @@ router.delete("/:id", auth(), async (req, res) => {
       return res.status(404).json({ error: "Listing not found" });
     }
 
-    // Check if current user is the owner
-    const currentUserId = req.user.sub;
-    if (listing.owner_id !== currentUserId) {
-      return res.status(403).json({ error: "Forbidden: You are not the owner of this listing" });
-    }
+    // Assert ownership
+    assertOwner(listing.owner_id, req.user.sub, "listing");
 
     // Delete the listing
     await deleteListing(id);
@@ -255,6 +255,9 @@ router.delete("/:id", auth(), async (req, res) => {
     console.error("Error deleting listing:", err);
     if (err.message === "Listing not found") {
       return res.status(404).json({ error: err.message });
+    }
+    if (err.message === "Forbidden: You are not the owner of this listing") {
+      return res.status(403).json({ error: err.message });
     }
     res.status(500).json({ error: "Internal server error" });
   }
