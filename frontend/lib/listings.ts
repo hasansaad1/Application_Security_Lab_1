@@ -101,3 +101,39 @@ export async function getMyListings(): Promise<Listing[]> {
     return listings;
 }
 
+export async function getListingById(id: number): Promise<Listing | null> {
+    const cookieStore = await cookies();
+
+    // Build "Cookie" header manually
+    const cookieHeader = cookieStore
+        .getAll()
+        .map((c) => `${c.name}=${encodeURIComponent(c.value)}`)
+        .join("; ");
+
+    let res: Response;
+    try {
+        res = await fetch(`http://backend:8080/listings/${id}`, {
+            method: "GET",
+            headers: {
+                cookie: cookieHeader,
+                accept: "application/json",
+            },
+            cache: "no-store",
+        });
+    } catch (err) {
+        console.error("[getListingById] fetch to listings backend failed:", err);
+        return null;
+    }
+
+    if (!res.ok) {
+        if (res.status === 404) {
+            return null;
+        }
+        console.error("[getListingById] /api/listings/:id returned", res.status);
+        return null;
+    }
+
+    const listing = await res.json();
+    return listing;
+}
+
