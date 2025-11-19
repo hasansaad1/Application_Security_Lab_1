@@ -76,6 +76,7 @@ export function Navbar({ user }: NavbarProps) {
     };
 
     return (
+        <>
         <header className="sticky top-0 z-30 bg-white/80 shadow-sm backdrop-blur">
             <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
 
@@ -173,19 +174,20 @@ export function Navbar({ user }: NavbarProps) {
                     </div>
                 </div>
             </div>
-
-            {/* Create Listing Modal */}
-            {user.id && (
-                <CreateListingModal
-                    isOpen={isCreateModalOpen}
-                    onClose={() => setIsCreateModalOpen(false)}
-                    userId={user.id}
-                    onSuccess={() => {
-                        // Refresh the page to show the new listing
-                        router.refresh();
-                    }}
-                />
-            )}
         </header>
+        
+        {/* Create Listing Modal - rendered outside header for proper positioning */}
+        {user.id && (
+            <CreateListingModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                userId={user.id}
+                onSuccess={() => {
+                    // Refresh the page to show the new listing
+                    router.refresh();
+                }}
+            />
+        )}
+    </>
     );
 }

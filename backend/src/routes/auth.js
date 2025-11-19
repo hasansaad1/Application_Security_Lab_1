@@ -13,9 +13,9 @@ const router = express.Router();
 const COOKIE_SETTINGS = {
   httpOnly: true,
   secure: true,
-  sameSite: 'strict',
+  sameSite: 'lax', // Changed from 'strict' to 'lax' for better compatibility
   path: '/',
-  maxAge: 1000 * 60 * 60, 
+  maxAge: 1000 * 60 * 60, // 1 hour
 };
 
 function signToken(user) {

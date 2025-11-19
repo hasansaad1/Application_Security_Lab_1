@@ -1,7 +1,11 @@
 const express = require("express");
 const router = express.Router();
+const path = require("path");
 const { auth } = require("../middleware/auth");
-const { getListings, getListingById, createListing, getPhoneNumber, getListingsByOwner, updateListing, deleteListing } = require("../services/listings");
+const { uploadListingImages } = require("../middleware/upload/listingImages");
+const { uploadErrorHandler } = require("../middleware/upload/errorHandler");
+const config = require("../config");
+const { getListings, getListingById, createListing, getPhoneNumber, getListingsByOwner, updateListing, deleteListing, saveListingImages } = require("../services/listings");
 
 // List all listings
 router.get("/", async (req, res) => {
@@ -10,6 +14,73 @@ router.get("/", async (req, res) => {
     res.json(listings);
   } catch (err) {
     console.error("Error fetching listings:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Create a new listing
+router.post("/", uploadListingImages, async (req, res) => {
+  try {
+    const payload = {
+      owner_id: req.body.owner_id ? parseInt(req.body.owner_id) : null,
+      title: req.body.title,
+      description: req.body.description || null,
+      price: req.body.price ? parseFloat(req.body.price) : null,
+      address_country: req.body.address_country || null,
+      address_province: req.body.address_province || null,
+      address_city: req.body.address_city || null,
+      address_zip_code: req.body.address_zip_code || null,
+      address_line1: req.body.address_line1 || null,
+      address_line2: req.body.address_line2 || null,
+      is_available: req.body.is_available !== undefined ? req.body.is_available === 'true' || req.body.is_available === true : true,
+      publication_date: new Date()
+    };
+
+    // Validate required fields
+    if (!payload.owner_id || !payload.title || payload.price == null) {
+      return res.status(400).json({ error: "Missing required fields: owner_id, title, price" });
+    }
+
+    // Create the listing
+    const insertId = await createListing(payload);
+
+    // Save images if any were uploaded
+    if (req.files && req.files.length > 0) {
+      const imagePaths = req.files.map(file => 
+        path.relative(config.uploads.root, file.path)
+      );
+      await saveListingImages(insertId, imagePaths);
+    }
+
+    const created = await getListingById(insertId);
+    res.status(201).json({ message: "Listing created", listing: created });
+  } catch (err) {
+    console.error("Error creating listing:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}, uploadErrorHandler);
+
+// Get current user's listings (must come before /:id route)
+router.get("/my", auth(), async (req, res) => {
+  try {
+    const currentUserId = req.user.sub;
+    const listings = await getListingsByOwner(currentUserId);
+    res.json(listings);
+  } catch (err) {
+    console.error("Error fetching user listings:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Get listings by owner id
+router.get("/owner/:id", async (req, res) => {
+  try {
+    const ownerId = Number(req.params.id);
+    if (!Number.isInteger(ownerId)) return res.status(400).json({ error: "Invalid user id" });
+    const listings = await getListingsByOwner(ownerId);
+    res.json(listings);
+  } catch (err) {
+    console.error("Error fetching listings by owner:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -24,22 +95,6 @@ router.get("/:id", async (req, res) => {
     res.json(listing);
   } catch (err) {
     console.error("Error fetching listing:", err);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-// Create a new listing
-router.post("/", async (req, res) => {
-  try {
-    const payload = req.body;
-    if (!payload.owner_id || !payload.title || payload.price == null) {
-      return res.status(400).json({ error: "Missing required fields: owner_id, title, price" });
-    }
-    const insertId = await createListing(payload);
-    const created = await getListingById(insertId);
-    res.status(201).json({ message: "Listing created", listing: created });
-  } catch (err) {
-    console.error("Error creating listing:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -62,19 +117,6 @@ router.get("/:id/phone", async (req, res) => {
     if (err.message === "Listing not found" || err.message === "Owner not found") {
       return res.status(404).json({ error: err.message });
     }
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-// Get listings by owner id
-router.get("/owner/:id", async (req, res) => {
-  try {
-    const ownerId = Number(req.params.id);
-    if (!Number.isInteger(ownerId)) return res.status(400).json({ error: "Invalid user id" });
-    const listings = await getListingsByOwner(ownerId);
-    res.json(listings);
-  } catch (err) {
-    console.error("Error fetching listings by owner:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });

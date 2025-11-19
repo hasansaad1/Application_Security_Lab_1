@@ -42,8 +42,17 @@ export function ListingCard({ listing }: ListingCardProps) {
         return text.substring(0, maxLength) + "...";
     };
 
+    const getImageUrl = (imagePath: string) => {
+        // If path already includes http/https, use as-is
+        if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+            return imagePath;
+        }
+        // Otherwise, prepend the API base URL
+        return `https://localhost/api/uploads/${imagePath}`;
+    };
+
     const mainImage = listing.images && listing.images.length > 0 
-        ? listing.images[0].path 
+        ? getImageUrl(listing.images[0].path)
         : null;
 
     return (

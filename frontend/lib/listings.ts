@@ -51,3 +51,36 @@ export async function getListings(): Promise<Listing[]> {
     return listings;
 }
 
+export async function getMyListings(): Promise<Listing[]> {
+    const cookieStore = await cookies();
+
+    // Build "Cookie" header manually
+    const cookieHeader = cookieStore
+        .getAll()
+        .map((c) => `${c.name}=${encodeURIComponent(c.value)}`)
+        .join("; ");
+
+    let res: Response;
+    try {
+        res = await fetch(`http://backend:8080/listings/my`, {
+            method: "GET",
+            headers: {
+                cookie: cookieHeader,
+                accept: "application/json",
+            },
+            cache: "no-store",
+        });
+    } catch (err) {
+        console.error("[getMyListings] fetch to listings backend failed:", err);
+        return [];
+    }
+
+    if (!res.ok) {
+        console.error("[getMyListings] /api/listings/my returned", res.status);
+        return [];
+    }
+
+    const listings = await res.json();
+    return listings;
+}
+

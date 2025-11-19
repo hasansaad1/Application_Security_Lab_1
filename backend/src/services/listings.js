@@ -71,6 +71,19 @@ async function createListing(listing) {
   return result.insertId;
 }
 
+// Save listing images to database
+async function saveListingImages(listingId, imagePaths) {
+  if (!imagePaths || imagePaths.length === 0) {
+    return;
+  }
+
+  const values = imagePaths.map(path => [listingId, path]);
+  await pool.query(
+    "INSERT INTO ListingsImages (listing_id, path) VALUES ?",
+    [values]
+  );
+}
+
 // Get decrypted phone number of the listing owner
 async function getPhoneNumber(listing_id) {
   const [listingRows] = await pool.query(
@@ -163,5 +176,6 @@ module.exports = {
   getPhoneNumber,
   getListingsByOwner,
   updateListing,
-  deleteListing
+  deleteListing,
+  saveListingImages
 };

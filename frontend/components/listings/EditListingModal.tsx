@@ -2,11 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import { XMarkIcon, PhotoIcon } from "@heroicons/react/24/outline";
+import { Listing } from "@/lib/listings";
 
-type CreateListingModalProps = {
+type EditListingModalProps = {
     isOpen: boolean;
     onClose: () => void;
-    userId: string;
+    listing: Listing;
     onSuccess: () => void;
 };
 
@@ -27,47 +28,66 @@ type FormErrors = {
     [key: string]: string;
 };
 
-export function CreateListingModal({ isOpen, onClose, userId, onSuccess }: CreateListingModalProps) {
+export function EditListingModal({ isOpen, onClose, listing, onSuccess }: EditListingModalProps) {
     const [formData, setFormData] = useState<FormData>({
-        title: "",
-        description: "",
-        price: "",
-        address_country: "",
-        address_province: "",
-        address_city: "",
-        address_zip_code: "",
-        address_line1: "",
-        address_line2: "",
-        is_available: true,
+        title: listing.title || "",
+        description: listing.description || "",
+        price: listing.price?.toString() || "",
+        address_country: listing.address_country || "",
+        address_province: listing.address_province || "",
+        address_city: listing.address_city || "",
+        address_zip_code: listing.address_zip_code || "",
+        address_line1: listing.address_line1 || "",
+        address_line2: listing.address_line2 || "",
+        is_available: listing.is_available ?? true,
     });
 
-    const [imageFiles, setImageFiles] = useState<File[]>([]);
-    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [errors, setErrors] = useState<FormErrors>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const modalRef = useRef<HTMLDivElement>(null);
 
+    const getImageUrl = (imagePath: string) => {
+        // If path already includes http/https, use as-is
+        if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+            return imagePath;
+        }
+        // Otherwise, prepend the API base URL
+        return `https://localhost/api/uploads/${imagePath}`;
+    };
+
+    // Update form data when listing changes
+    useEffect(() => {
+        if (listing) {
+            setFormData({
+                title: listing.title || "",
+                description: listing.description || "",
+                price: listing.price?.toString() || "",
+                address_country: listing.address_country || "",
+                address_province: listing.address_province || "",
+                address_city: listing.address_city || "",
+                address_zip_code: listing.address_zip_code || "",
+                address_line1: listing.address_line1 || "",
+                address_line2: listing.address_line2 || "",
+                is_available: listing.is_available ?? true,
+            });
+            // Set preview to existing image if available
+            if (listing.images && listing.images.length > 0) {
+                setImagePreview(getImageUrl(listing.images[0].path));
+            }
+        }
+    }, [listing]);
+
     // Reset form when modal closes
     useEffect(() => {
         if (!isOpen) {
-            setFormData({
-                title: "",
-                description: "",
-                price: "",
-                address_country: "",
-                address_province: "",
-                address_city: "",
-                address_zip_code: "",
-                address_line1: "",
-                address_line2: "",
-                is_available: true,
-            });
-            setImageFiles([]);
-            setImagePreviews([]);
+            setImageFile(null);
+            setImagePreview(listing.images && listing.images.length > 0 ? getImageUrl(listing.images[0].path) : null);
             setErrors({});
         }
-    }, [isOpen]);
+    }, [isOpen, listing]);
 
     // Handle escape key
     useEffect(() => {
@@ -112,26 +132,15 @@ export function CreateListingModal({ isOpen, onClose, userId, onSuccess }: Creat
     };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(e.target.files || []);
-        if (files.length > 0) {
-            // Limit to 10 images
-            const filesToAdd = files.slice(0, 10 - imageFiles.length);
-            setImageFiles((prev) => [...prev, ...filesToAdd]);
-            
-            // Create previews for new files
-            filesToAdd.forEach((file) => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    setImagePreviews((prev) => [...prev, reader.result as string]);
-                };
-                reader.readAsDataURL(file);
-            });
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
         }
-    };
-
-    const removeImage = (index: number) => {
-        setImageFiles((prev) => prev.filter((_, i) => i !== index));
-        setImagePreviews((prev) => prev.filter((_, i) => i !== index));
     };
 
     const validateForm = (): boolean => {
@@ -164,57 +173,47 @@ export function CreateListingModal({ isOpen, onClose, userId, onSuccess }: Creat
         setIsSubmitting(true);
 
         try {
-            // Create FormData for multipart/form-data upload
-            const formDataToSend = new FormData();
-            formDataToSend.append("owner_id", userId);
-            formDataToSend.append("title", formData.title.trim());
-            if (formData.description.trim()) {
-                formDataToSend.append("description", formData.description.trim());
-            }
-            formDataToSend.append("price", formData.price);
-            if (formData.address_country.trim()) {
-                formDataToSend.append("address_country", formData.address_country.trim());
-            }
-            if (formData.address_province.trim()) {
-                formDataToSend.append("address_province", formData.address_province.trim());
-            }
-            if (formData.address_city.trim()) {
-                formDataToSend.append("address_city", formData.address_city.trim());
-            }
-            if (formData.address_zip_code.trim()) {
-                formDataToSend.append("address_zip_code", formData.address_zip_code.trim());
-            }
-            if (formData.address_line1.trim()) {
-                formDataToSend.append("address_line1", formData.address_line1.trim());
-            }
-            if (formData.address_line2.trim()) {
-                formDataToSend.append("address_line2", formData.address_line2.trim());
-            }
-            formDataToSend.append("is_available", formData.is_available.toString());
+            const payload: any = {
+                title: formData.title.trim(),
+                description: formData.description.trim() || null,
+                price: parseFloat(formData.price),
+                address_country: formData.address_country.trim() || null,
+                address_province: formData.address_province.trim() || null,
+                address_city: formData.address_city.trim() || null,
+                address_zip_code: formData.address_zip_code.trim() || null,
+                address_line1: formData.address_line1.trim() || null,
+                address_line2: formData.address_line2.trim() || null,
+                is_available: formData.is_available,
+            };
 
-            // Append images
-            imageFiles.forEach((file) => {
-                formDataToSend.append("images", file);
+            // Only include fields that have values
+            Object.keys(payload).forEach((key) => {
+                if (payload[key] === null || payload[key] === "") {
+                    delete payload[key];
+                }
             });
 
-            const res = await fetch("https://localhost/api/listings", {
-                method: "POST",
+            const res = await fetch(`https://localhost/api/listings/${listing.id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
                 credentials: "include",
-                body: formDataToSend, // Don't set Content-Type header - browser will set it with boundary
+                body: JSON.stringify(payload),
             });
 
             if (!res.ok) {
                 const errorData = await res.json().catch(() => ({}));
-                throw new Error(errorData.error || "Failed to create listing");
+                throw new Error(errorData.error || "Failed to update listing");
             }
 
             // Success - close modal and refresh listings
             onSuccess();
             onClose();
         } catch (err) {
-            console.error("Error creating listing:", err);
+            console.error("Error updating listing:", err);
             setErrors({
-                submit: err instanceof Error ? err.message : "Failed to create listing. Please try again.",
+                submit: err instanceof Error ? err.message : "Failed to update listing. Please try again.",
             });
         } finally {
             setIsSubmitting(false);
@@ -231,7 +230,7 @@ export function CreateListingModal({ isOpen, onClose, userId, onSuccess }: Creat
             <div ref={modalRef} className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                    <h2 className="text-xl font-semibold text-gray-900">Create New Listing</h2>
+                    <h2 className="text-xl font-semibold text-gray-900">Edit Listing</h2>
                     <button
                         type="button"
                         onClick={onClose}
@@ -399,56 +398,38 @@ export function CreateListingModal({ isOpen, onClose, userId, onSuccess }: Creat
                         </div>
                     </div>
 
-                    {/* Image Upload */}
+                    {/* Image Upload (UI only, not sent) */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Property Images (optional, up to 10)
+                            Property Image (optional)
                         </label>
-                        <div className="mt-1">
+                        <div className="mt-1 flex items-center gap-4">
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                disabled={imageFiles.length >= 10}
-                                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                             >
                                 <PhotoIcon className="h-5 w-5" />
-                                {imageFiles.length > 0 ? "Add More Images" : "Choose Images"}
+                                {imageFile ? "Change Image" : "Choose Image"}
                             </button>
                             <input
                                 ref={fileInputRef}
                                 type="file"
                                 accept="image/*"
-                                multiple
                                 onChange={handleImageChange}
                                 className="hidden"
                             />
-                            {imagePreviews.length > 0 && (
-                                <div className="mt-3 grid grid-cols-4 gap-3">
-                                    {imagePreviews.map((preview, index) => (
-                                        <div key={index} className="relative group">
-                                            <img
-                                                src={preview}
-                                                alt={`Preview ${index + 1}`}
-                                                className="h-24 w-full object-cover rounded-md border border-gray-300"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => removeImage(index)}
-                                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                aria-label="Remove image"
-                                            >
-                                                <XMarkIcon className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                    ))}
+                            {imagePreview && (
+                                <div className="relative">
+                                    <img
+                                        src={imagePreview}
+                                        alt="Preview"
+                                        className="h-20 w-20 object-cover rounded-md border border-gray-300"
+                                    />
                                 </div>
                             )}
                         </div>
-                        <p className="mt-1 text-xs text-gray-500">
-                            {imageFiles.length > 0 
-                                ? `${imageFiles.length} image${imageFiles.length > 1 ? 's' : ''} selected. ${imageFiles.length < 10 ? `You can add ${10 - imageFiles.length} more.` : 'Maximum reached.'}`
-                                : 'Select up to 10 images (JPG, PNG, max 5MB each)'}
-                        </p>
+                        <p className="mt-1 text-xs text-gray-500">Image upload will be implemented later</p>
                     </div>
 
                     {/* Availability */}
@@ -488,7 +469,7 @@ export function CreateListingModal({ isOpen, onClose, userId, onSuccess }: Creat
                             className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={isSubmitting}
                         >
-                            {isSubmitting ? "Posting..." : "Post Listing"}
+                            {isSubmitting ? "Saving..." : "Save Changes"}
                         </button>
                     </div>
                 </form>
