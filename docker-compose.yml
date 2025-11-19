@@ -61,7 +61,6 @@ services:
       - enc-key
       - jwt-secret
     volumes:
-      - back-notused:/opt/app/node_modules
       - ./backend/uploads:/code/uploads
     networks:
       - public
@@ -119,7 +118,6 @@ networks:
   private:
 
 volumes:
-  back-notused:
   db-data:
 
 secrets:
