@@ -168,6 +168,64 @@ async function deleteListing(id) {
   return true;
 }
 
+// Check if user has favorited a listing
+async function isListingFavorited(userId, listingId) {
+  const [rows] = await pool.query(
+    "SELECT id FROM ListingFollowers WHERE user_id = ? AND listing_id = ?",
+    [userId, listingId]
+  );
+  return rows.length > 0;
+}
+
+// Add listing to favorites
+async function addToFavorites(userId, listingId) {
+  // Check if already favorited
+  const alreadyFavorited = await isListingFavorited(userId, listingId);
+  if (alreadyFavorited) {
+    return true; // Already favorited, return success
+  }
+
+  await pool.query(
+    "INSERT INTO ListingFollowers (user_id, listing_id) VALUES (?, ?)",
+    [userId, listingId]
+  );
+  return true;
+}
+
+// Remove listing from favorites
+async function removeFromFavorites(userId, listingId) {
+  const [result] = await pool.query(
+    "DELETE FROM ListingFollowers WHERE user_id = ? AND listing_id = ?",
+    [userId, listingId]
+  );
+  return result.affectedRows > 0;
+}
+
+// Get all favorite listings for a user
+async function getFavoriteListings(userId) {
+  const [rows] = await pool.query(
+    `SELECT L.*, U.username AS owner_username
+     FROM Listings L
+     JOIN ListingFollowers LF ON L.id = LF.listing_id
+     JOIN Users U ON L.owner_id = U.id
+     WHERE LF.user_id = ?;`,
+    [userId]
+  );
+
+  const listings = rows.map(r => new Listing(r));
+  
+  // Fetch images for each listing
+  for (const listing of listings) {
+    const [images] = await pool.query(
+      "SELECT path FROM ListingsImages WHERE listing_id = ?;",
+      [listing.id]
+    );
+    listing.images = images;
+  }
+  
+  return listings;
+}
+
 module.exports = {
   Listing,
   getListings,
@@ -177,5 +235,9 @@ module.exports = {
   getListingsByOwner,
   updateListing,
   deleteListing,
-  saveListingImages
+  saveListingImages,
+  isListingFavorited,
+  addToFavorites,
+  removeFromFavorites,
+  getFavoriteListings
 };

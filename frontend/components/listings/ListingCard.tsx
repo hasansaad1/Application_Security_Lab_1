@@ -1,5 +1,10 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { MapPinIcon, CurrencyDollarIcon } from "@heroicons/react/24/outline";
+import { MapPinIcon, CurrencyDollarIcon, HeartIcon } from "@heroicons/react/24/outline";
+import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
+import { checkFavoriteStatus, addToFavorites, removeFromFavorites } from "@/lib/favorites";
 
 type Listing = {
     id: number;
@@ -15,9 +20,52 @@ type Listing = {
 
 type ListingCardProps = {
     listing: Listing;
+    userId?: string;
+    onFavoriteRemoved?: () => void;
 };
 
-export function ListingCard({ listing }: ListingCardProps) {
+export function ListingCard({ listing, userId, onFavoriteRemoved }: ListingCardProps) {
+    const [isFavorited, setIsFavorited] = useState(false);
+    const [isToggling, setIsToggling] = useState(false);
+
+    // Check favorite status on mount
+    useEffect(() => {
+        if (userId) {
+            checkFavoriteStatus(listing.id).then(setIsFavorited);
+        }
+    }, [listing.id, userId]);
+
+    const handleFavoriteToggle = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!userId || isToggling) {
+            return;
+        }
+
+        setIsToggling(true);
+        try {
+            if (isFavorited) {
+                const success = await removeFromFavorites(listing.id);
+                if (success) {
+                    setIsFavorited(false);
+                    // Notify parent if on favorites page
+                    if (onFavoriteRemoved) {
+                        onFavoriteRemoved();
+                    }
+                }
+            } else {
+                const success = await addToFavorites(listing.id);
+                if (success) {
+                    setIsFavorited(true);
+                }
+            }
+        } catch (err) {
+            console.error("Error toggling favorite:", err);
+        } finally {
+            setIsToggling(false);
+        }
+    };
     const formatPrice = (price: number) => {
         return new Intl.NumberFormat("en-US", {
             style: "currency",
@@ -77,6 +125,22 @@ export function ListingCard({ listing }: ListingCardProps) {
                     <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded">
                         Unavailable
                     </div>
+                )}
+                {/* Favorite Icon */}
+                {userId && (
+                    <button
+                        type="button"
+                        onClick={handleFavoriteToggle}
+                        disabled={isToggling}
+                        className="absolute top-3 left-3 p-2 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                        aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
+                    >
+                        {isFavorited ? (
+                            <HeartIconSolid className="h-5 w-5 text-rose-500" />
+                        ) : (
+                            <HeartIcon className="h-5 w-5 text-gray-600" />
+                        )}
+                    </button>
                 )}
             </div>
 

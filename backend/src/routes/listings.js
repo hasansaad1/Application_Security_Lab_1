@@ -5,7 +5,7 @@ const { auth } = require("../middleware/auth");
 const { uploadListingImages } = require("../middleware/upload/listingImages");
 const { uploadErrorHandler } = require("../middleware/upload/errorHandler");
 const config = require("../config");
-const { getListings, getListingById, createListing, getPhoneNumber, getListingsByOwner, updateListing, deleteListing, saveListingImages } = require("../services/listings");
+const { getListings, getListingById, createListing, getPhoneNumber, getListingsByOwner, updateListing, deleteListing, saveListingImages, isListingFavorited, addToFavorites, removeFromFavorites, getFavoriteListings } = require("../services/listings");
 
 // List all listings
 router.get("/", async (req, res) => {
@@ -72,6 +72,18 @@ router.get("/my", auth(), async (req, res) => {
   }
 });
 
+// Get current user's favorite listings (must come before /:id route)
+router.get("/favorites", auth(), async (req, res) => {
+  try {
+    const currentUserId = req.user.sub;
+    const listings = await getFavoriteListings(currentUserId);
+    res.json(listings);
+  } catch (err) {
+    console.error("Error fetching favorite listings:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // Get listings by owner id
 router.get("/owner/:id", async (req, res) => {
   try {
@@ -81,6 +93,66 @@ router.get("/owner/:id", async (req, res) => {
     res.json(listings);
   } catch (err) {
     console.error("Error fetching listings by owner:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Check if listing is favorited by current user (must come before /:id route)
+router.get("/:id/favorite", auth(), async (req, res) => {
+  try {
+    const listingId = Number(req.params.id);
+    if (!Number.isInteger(listingId)) {
+      return res.status(400).json({ error: "Invalid listing id" });
+    }
+
+    const userId = req.user.sub;
+    const favorited = await isListingFavorited(userId, listingId);
+    res.json({ favorited });
+  } catch (err) {
+    console.error("Error checking favorite status:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Add listing to favorites (must come before /:id route)
+router.post("/:id/favorite", auth(), async (req, res) => {
+  try {
+    const listingId = Number(req.params.id);
+    if (!Number.isInteger(listingId)) {
+      return res.status(400).json({ error: "Invalid listing id" });
+    }
+
+    // Verify listing exists
+    const listing = await getListingById(listingId);
+    if (!listing) {
+      return res.status(404).json({ error: "Listing not found" });
+    }
+
+    const userId = req.user.sub;
+    await addToFavorites(userId, listingId);
+    res.status(200).json({ message: "Listing added to favorites" });
+  } catch (err) {
+    console.error("Error adding to favorites:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Remove listing from favorites (must come before /:id route)
+router.delete("/:id/favorite", auth(), async (req, res) => {
+  try {
+    const listingId = Number(req.params.id);
+    if (!Number.isInteger(listingId)) {
+      return res.status(400).json({ error: "Invalid listing id" });
+    }
+
+    const userId = req.user.sub;
+    const removed = await removeFromFavorites(userId, listingId);
+    if (!removed) {
+      return res.status(404).json({ error: "Favorite not found" });
+    }
+    res.status(200).json({ message: "Listing removed from favorites" });
+  } catch (err) {
+    console.error("Error removing from favorites:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });

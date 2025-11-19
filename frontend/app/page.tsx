@@ -33,7 +33,7 @@ export default async function HomePage() {
                     {listings.length > 0 ? (
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
                             {listings.map((listing) => (
-                                <ListingCard key={listing.id} listing={listing} />
+                                <ListingCard key={listing.id} listing={listing} userId={user.id} />
                             ))}
                         </div>
                     ) : (
