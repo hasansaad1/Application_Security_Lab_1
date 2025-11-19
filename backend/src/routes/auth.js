@@ -7,6 +7,14 @@ const config = require("../config");
 const { auth } = require("../middleware/auth");
 const { uploadProfilePicture } = require("../middleware/upload/profilePicture");
 const userService = require("../services/user");
+const {
+  validateEmail,
+  validateUsername,
+  validatePassword,
+  validateRole,
+  validatePhoneNumber,
+  sanitizeString,
+} = require("../utils/validation");
 
 const router = express.Router();
 
@@ -29,12 +37,36 @@ function signToken(user) {
 
 router.post("/register", uploadProfilePicture, async (req, res) => {
   try {
-    // TODO: I am not sure if role should be added (what if admin is selected); at least we should check
     const { username, email, password, role, phone_number } = req.body;
 
     /* Validations */
     if (!username || !email || !password || !role || !phone_number) {
       return res.status(400).json({ error: "Missing required fields: username, email, password, role, phone_number" });
+    }
+
+    // Validate and sanitize inputs
+    const sanitizedUsername = sanitizeString(username);
+    const sanitizedEmail = sanitizeString(email).toLowerCase();
+    const sanitizedPhone = sanitizeString(phone_number);
+
+    if (!validateUsername(sanitizedUsername)) {
+      return res.status(400).json({ error: "Invalid username. Username must be 3-50 characters and contain only letters, numbers, underscores, or hyphens" });
+    }
+
+    if (!validateEmail(sanitizedEmail)) {
+      return res.status(400).json({ error: "Invalid email format" });
+    }
+
+    if (!validatePassword(password)) {
+      return res.status(400).json({ error: "Password must be at least 8 characters and contain both letters and numbers" });
+    }
+
+    if (!validateRole(role)) {
+      return res.status(400).json({ error: "Invalid role. Must be one of: admin, landlord, tenant" });
+    }
+
+    if (!validatePhoneNumber(sanitizedPhone)) {
+      return res.status(400).json({ error: "Invalid phone number format" });
     }
     
     /* Save profile picture if included */
@@ -48,12 +80,12 @@ router.post("/register", uploadProfilePicture, async (req, res) => {
 
     /* Create user */
     const user = await userService.createUser({
-        username,
-        email,
+        username: sanitizedUsername,
+        email: sanitizedEmail,
         password_hash,
         role,
         profile_picture_path,
-        phone_number
+        phone_number: sanitizedPhone
     });
 
     /* Generate JWT and store it in cookie */
@@ -78,9 +110,24 @@ router.post("/register", uploadProfilePicture, async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+
     /* Validations */
-    const user = await userService.getUserByEmail(email);
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    // Sanitize email
+    const sanitizedEmail = sanitizeString(email).toLowerCase();
+    
+    if (!validateEmail(sanitizedEmail)) {
+      return res.status(400).json({ error: "Invalid email format" });
+    }
+
+    if (typeof password !== 'string' || password.length === 0) {
+      return res.status(400).json({ error: "Password is required" });
+    }
+    
+    const user = await userService.getUserByEmail(sanitizedEmail);
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
