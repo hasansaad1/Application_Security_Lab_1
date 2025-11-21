@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const readFileSync = filename => fs.readFileSync(filename).toString("utf8");
+const readFileSync = filename => fs.readFileSync(filename, "utf8").trim();
 
 const UPLOAD_ROOT = path.join(process.cwd(), 'uploads');
 const PORFILE_PICTURE_DIR = path.join(UPLOAD_ROOT, 'profile_pictures');

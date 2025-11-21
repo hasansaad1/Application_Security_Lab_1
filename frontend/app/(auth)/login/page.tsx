@@ -13,7 +13,7 @@ export default function LoginPage() {
                 Don&apos;t have an account?{" "}
                 <Link
                     href="/register"
-                    className="font-medium text-indigo-600 hover:text-indigo-500"
+                    className="font-medium text-rose-600 hover:text-rose-500"
                 >
                     Sign up
                 </Link>

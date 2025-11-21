@@ -22,10 +22,42 @@ class Listing {
 
 // Functions
 
-// Get all listings
-async function getListings() {
-  const [rows] = await pool.query("SELECT * FROM Listings;");
-  return rows.map(r => new Listing(r));
+// Get all listings with pagination
+async function getListings(page = 1, limit = 10) {
+  // Validate and normalize pagination parameters
+  const pageNum = Math.max(1, parseInt(page) || 1);
+  const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 10)); // Max 100 items per page
+  const offset = (pageNum - 1) * limitNum;
+
+  // Get total count of listings
+  const [countResult] = await pool.query("SELECT COUNT(*) as total FROM Listings;");
+  const total = countResult[0].total;
+
+  // Get paginated listings
+  const [rows] = await pool.query(
+    "SELECT * FROM Listings ORDER BY publication_date DESC LIMIT ? OFFSET ?;",
+    [limitNum, offset]
+  );
+  const listings = rows.map(r => new Listing(r));
+  
+  // Fetch images for each listing
+  for (const listing of listings) {
+    const [images] = await pool.query(
+      "SELECT path FROM ListingsImages WHERE listing_id = ?;",
+      [listing.id]
+    );
+    listing.images = images;
+  }
+  
+  return {
+    listings,
+    pagination: {
+      page: pageNum,
+      limit: limitNum,
+      total,
+      totalPages: Math.ceil(total / limitNum)
+    }
+  };
 }
 
 // Get listing by ID
@@ -58,6 +90,19 @@ async function createListing(listing) {
     [listing.owner_id, listing.title, listing.description, listing.price, listing.address_country, listing.address_province, listing.address_city, listing.address_zip_code, listing.address_line1, listing.address_line2, listing.is_available, listing.publication_date]
   );
   return result.insertId;
+}
+
+// Save listing images to database
+async function saveListingImages(listingId, imagePaths) {
+  if (!imagePaths || imagePaths.length === 0) {
+    return;
+  }
+
+  const values = imagePaths.map(path => [listingId, path]);
+  await pool.query(
+    "INSERT INTO ListingsImages (listing_id, path) VALUES ?",
+    [values]
+  );
 }
 
 // Get decrypted phone number of the listing owner
@@ -94,7 +139,131 @@ async function getPhoneNumber(listing_id) {
 // Get listings by owner
 async function getListingsByOwner(ownerId) {
   const [rows] = await pool.query(`SELECT * FROM Listings WHERE owner_id = ?`, [ownerId]);
-  return rows.map(r => new Listing(r));
+  const listings = rows.map(r => new Listing(r));
+  
+  // Fetch images for each listing
+  for (const listing of listings) {
+    const [images] = await pool.query(
+      "SELECT path FROM ListingsImages WHERE listing_id = ?;",
+      [listing.id]
+    );
+    listing.images = images;
+  }
+  
+  return listings;
+}
+
+// Update listing by ID
+async function updateListing(id, updates) {
+  // Build dynamic UPDATE query based on provided fields
+  const allowedFields = [
+    'title', 'description', 'price', 'address_country', 'address_province',
+    'address_city', 'address_zip_code', 'address_line1', 'address_line2', 'is_available'
+  ];
+  
+  const fields = [];
+  const values = [];
+  
+  for (const field of allowedFields) {
+    if (updates[field] !== undefined) {
+      fields.push(`${field} = ?`);
+      values.push(updates[field]);
+    }
+  }
+  
+  if (fields.length === 0) {
+    throw new Error("No valid fields to update");
+  }
+  
+  values.push(id);
+  
+  const [result] = await pool.query(
+    `UPDATE Listings SET ${fields.join(', ')} WHERE id = ?`,
+    values
+  );
+  
+  if (result.affectedRows === 0) {
+    throw new Error("Listing not found");
+  }
+  
+  return await getListingById(id);
+}
+
+// Delete listing by ID
+async function deleteListing(id) {
+  // First, delete all related records that reference this listing
+  // Delete from ListingFollowers (favorites)
+  await pool.query("DELETE FROM ListingFollowers WHERE listing_id = ?", [id]);
+  
+  // Delete from ListingsImages
+  await pool.query("DELETE FROM ListingsImages WHERE listing_id = ?", [id]);
+  
+  // Finally, delete the listing itself
+  const [result] = await pool.query("DELETE FROM Listings WHERE id = ?", [id]);
+  
+  if (result.affectedRows === 0) {
+    throw new Error("Listing not found");
+  }
+  
+  return true;
+}
+
+// Check if user has favorited a listing
+async function isListingFavorited(userId, listingId) {
+  const [rows] = await pool.query(
+    "SELECT id FROM ListingFollowers WHERE user_id = ? AND listing_id = ?",
+    [userId, listingId]
+  );
+  return rows.length > 0;
+}
+
+// Add listing to favorites
+async function addToFavorites(userId, listingId) {
+  // Check if already favorited
+  const alreadyFavorited = await isListingFavorited(userId, listingId);
+  if (alreadyFavorited) {
+    return true; // Already favorited, return success
+  }
+
+  await pool.query(
+    "INSERT INTO ListingFollowers (user_id, listing_id) VALUES (?, ?)",
+    [userId, listingId]
+  );
+  return true;
+}
+
+// Remove listing from favorites
+async function removeFromFavorites(userId, listingId) {
+  const [result] = await pool.query(
+    "DELETE FROM ListingFollowers WHERE user_id = ? AND listing_id = ?",
+    [userId, listingId]
+  );
+  return result.affectedRows > 0;
+}
+
+// Get all favorite listings for a user
+async function getFavoriteListings(userId) {
+  const [rows] = await pool.query(
+    `SELECT L.*, U.username AS owner_username
+     FROM Listings L
+     JOIN ListingFollowers LF ON L.id = LF.listing_id
+     JOIN Users U ON L.owner_id = U.id
+     WHERE LF.user_id = ?;`,
+    [userId]
+  );
+
+  const listings = rows.map(r => new Listing(r));
+  
+  // Fetch images for each listing
+  for (const listing of listings) {
+    const [images] = await pool.query(
+      "SELECT path FROM ListingsImages WHERE listing_id = ?;",
+      [listing.id]
+    );
+    listing.images = images;
+  }
+  
+  return listings;
 }
 
 module.exports = {
@@ -103,5 +272,12 @@ module.exports = {
   getListingById,
   createListing,
   getPhoneNumber,
-  getListingsByOwner
+  getListingsByOwner,
+  updateListing,
+  deleteListing,
+  saveListingImages,
+  isListingFavorited,
+  addToFavorites,
+  removeFromFavorites,
+  getFavoriteListings
 };

@@ -3,6 +3,8 @@ const morgan = require("morgan");
 const helmet = require("helmet");
 const cors = require("cors");
 const cookieParser = require('cookie-parser');
+const path = require("path");
+const config = require("./config");
 const app = express();
 
 const { uploadErrorHandler } = require("./middleware/upload/errorHandler");
@@ -26,6 +28,9 @@ app.use(
 );
 
 app.use(cookieParser());
+
+// Serve uploaded files (images, profile pictures, etc.)
+app.use("/uploads", express.static(config.uploads.root));
 
 // Check server 
 app.get("/health", function(req, res) {

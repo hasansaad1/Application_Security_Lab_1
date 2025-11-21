@@ -1,5 +1,6 @@
 const express = require("express");
 const { getUsers, getUserByEmail } = require("../services/user");
+const { validateEmail, sanitizeString } = require("../utils/validation");
 
 const router = express.Router();
 
@@ -17,7 +18,13 @@ router.get("/", async (req, res) => {
 // Get user by email
 router.get("/:email", async (req, res) => {
   try {
-    const user = await getUserByEmail(req.params.email);
+    // Validate and sanitize email parameter
+    const sanitizedEmail = sanitizeString(req.params.email).toLowerCase();
+    if (!validateEmail(sanitizedEmail)) {
+      return res.status(400).json({ error: "Invalid email format" });
+    }
+    
+    const user = await getUserByEmail(sanitizedEmail);
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
   } catch (err) {
