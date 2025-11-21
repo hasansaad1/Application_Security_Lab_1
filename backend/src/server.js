@@ -2,9 +2,14 @@ const express = require("express");
 const morgan = require("morgan");
 const helmet = require("helmet");
 const cors = require("cors");
-const db = require("./db");
+const cookieParser = require('cookie-parser');
+const path = require("path");
+const config = require("./config");
 const app = express();
 
+const { uploadErrorHandler } = require("./middleware/upload/errorHandler");
+
+const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const listingRoutes = require("./routes/listings");
 
@@ -22,6 +27,11 @@ app.use(
   })
 );
 
+app.use(cookieParser());
+
+// Serve uploaded files (images, profile pictures, etc.)
+app.use("/uploads", express.static(config.uploads.root));
+
 // Check server 
 app.get("/health", function(req, res) {
     // do app logic here to determine if app is truly healthy
@@ -31,7 +41,11 @@ app.get("/health", function(req, res) {
 });
 
 // Routes
+app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/listings", listingRoutes);
+
+// Error handlers
+app.use(uploadErrorHandler);
 
 module.exports = app;

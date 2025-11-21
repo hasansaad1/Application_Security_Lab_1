@@ -1,28 +1,19 @@
 const pool = require("../db");
-const { Listing } = require("./listings");
+const { User } = require("../models/user");
 const { encryptJSON, decryptToJSON } = require("../crypto");
-
-// Entities
-class User {
-  constructor({ id, username, email, password_hash, role, profile_picture_path, phone_number }) {
-    this.id = id;
-    this.username = username;
-    this.email = email;
-    this.password_hash = password_hash;
-    this.role = role;
-    this.profile_picture_path = profile_picture_path;
-    this.phone_number = phone_number;
-  }
-}
-
-// Functions
 
 // Get user by email
 async function getUserByEmail(email) {
   const [rows] = await pool.query("SELECT * FROM Users WHERE email = ?;", [email]);
-  if (!rows.length) return null;
+  if (!rows.length) {
+    return null;
+  }
 
-  const user = new User(rows[0]);
+  const userData = { ...rows[0] };
+  // Remove role field if it exists (for backward compatibility)
+  delete userData.role;
+
+  const user = new User(userData);
   try {
     const parsed = JSON.parse(user.phone_number);
     const decrypted = decryptToJSON(parsed.encrypted, parsed.iv, parsed.tag);
@@ -30,7 +21,7 @@ async function getUserByEmail(email) {
   } catch (e) {
     console.warn("Could not decrypt phone number:", e.message);
   }
-  return user; //TO DO: check security and limitations of usage
+  return user; // TODO: check security and limitations of usage
 }
 
 // Create new user
@@ -39,9 +30,9 @@ async function createUser(user) {
   const encryptedPhone = JSON.stringify({ encrypted, iv, tag });
 
   const [result] = await pool.query(
-    `INSERT INTO Users (username, email, password_hash, role, profile_picture_path, phone_number)
-     VALUES (?, ?, ?, ?, ?, ?);`,
-    [user.username, user.email, user.password_hash, user.role, user.profile_picture_path, encryptedPhone]
+    `INSERT INTO Users (username, email, password_hash, profile_picture_path, phone_number)
+     VALUES (?, ?, ?, ?, ?);`,
+    [user.username, user.email, user.password_hash, user.profile_picture_path, encryptedPhone]
   );
 
   const [rows] = await pool.query(`SELECT * FROM Users WHERE id = ?;`, [result.insertId]);
@@ -71,7 +62,6 @@ async function getUsers() {
 }
 
 module.exports = {
-  User,
   getUserByEmail,
   createUser,
   getUsers

@@ -1,9 +1,9 @@
-INSERT INTO Users (username, email, password_hash, role, profile_picture_path, phone_number)
+INSERT INTO Users (username, email, password_hash, profile_picture_path, phone_number)
 VALUES
-('admin_john', 'admin.john@homigo.com', 'hashed_pw_123', 'admin', '/images/profiles/admin_john.jpg', '+1-555-111-2222'),
-('landlord_maria', 'maria.landlord@homigo.com', 'hashed_pw_456', 'landlord', '/images/profiles/maria.jpg', '+1-555-333-4444'),
-('tenant_bob', 'bob.tenant@homigo.com', 'hashed_pw_789', 'tenant', '/images/profiles/bob.jpg', '+1-555-555-6666'),
-('tenant_alice', 'alice.tenant@homigo.com', 'hashed_pw_abc', 'tenant', NULL, '+1-555-777-8888');
+('admin_john', 'admin.john@homigo.com', 'hashed_pw_123', '/images/profiles/admin_john.jpg', '+1-555-111-2222'),
+('landlord_maria', 'maria.landlord@homigo.com', 'hashed_pw_456', '/images/profiles/maria.jpg', '+1-555-333-4444'),
+('tenant_bob', 'bob.tenant@homigo.com', 'hashed_pw_789', '/images/profiles/bob.jpg', '+1-555-555-6666'),
+('tenant_alice', 'alice.tenant@homigo.com', 'hashed_pw_abc', NULL, '+1-555-777-8888');
 
 INSERT INTO Listings (owner_id, title, description, price, address_country, address_province, address_city, address_zip_code, address_line1, address_line2, is_available)
 VALUES

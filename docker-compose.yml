@@ -17,15 +17,13 @@ services:
       target: development
     ports:
       - "3000:3000"  # Exposed for standalone development
-    volumes:
-      - /code/node_modules
     networks:
       - public
     environment:
       NODE_ENV: development
       # Uncomment polling if file changes aren't detected on your host
-      # WATCHPACK_POLLING: "true"
-      # CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
     develop:
       watch:
         - path: ./frontend
@@ -56,11 +54,14 @@ services:
       - NODE_ENV=development
       - CORS_ORIGIN=https://localhost
       - ENCRYPTION_KEY=/run/secrets/enc-key
+      - JWT_SECRET=/run/secrets/jwt-secret
+      - JWT_EXPIRES_IN=1h
     secrets:
       - db-password
       - enc-key
+      - jwt-secret
     volumes:
-      - back-notused:/opt/app/node_modules
+      - ./backend/uploads:/code/uploads
     networks:
       - public
       - private
@@ -95,12 +96,28 @@ services:
       - MYSQL_DATABASE=homigo
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
 
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:5.2
+    restart: unless-stopped
+    ports:
+      - "8081:80"          
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD_FILE: /run/secrets/db-password
+      UPLOAD_LIMIT: 512M
+    secrets:
+      - db-password
+    networks:
+      - private
+    depends_on:
+      - db
+
 networks:
   public:
   private:
 
 volumes:
-  back-notused:
   db-data:
 
 secrets:
@@ -108,3 +125,5 @@ secrets:
     file: db/password.txt
   enc-key:
     file: db/enc_key.txt
+  jwt-secret:
+    file: backend/secrets/jwt.txt
