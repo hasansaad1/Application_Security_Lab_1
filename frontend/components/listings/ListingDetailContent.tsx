@@ -16,13 +16,15 @@ import { checkFavoriteStatus, addToFavorites, removeFromFavorites } from "@/lib/
 type ListingDetailContentProps = {
     listing: Listing;
     userId: string;
+    phone: string;
 };
 
-export function ListingDetailContent({ listing, userId }: ListingDetailContentProps) {
+export function ListingDetailContent({ listing, userId, phone }: ListingDetailContentProps) {
     const router = useRouter();
     const [isFavorited, setIsFavorited] = useState(false);
     const [isToggling, setIsToggling] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
     // Check favorite status on mount
     useEffect(() => {
@@ -30,6 +32,31 @@ export function ListingDetailContent({ listing, userId }: ListingDetailContentPr
             checkFavoriteStatus(listing.id).then(setIsFavorited);
         }
     }, [listing.id, userId]);
+
+    const [ownerInfo, setOwnerInfo] = useState<{ username: string; email: string } | null>(null);
+
+    useEffect(() => {
+        async function fetchOwnerInfo() {
+            try {
+                const res = await fetch(`/api/users/id/${listing.owner_id}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setOwnerInfo({
+                        username: data.username,
+                        email: data.email,
+                    });
+                } else {
+                    console.error("Failed to fetch owner info");
+                }
+            } catch (err) {
+                console.error("Error fetching owner info:", err);
+            }
+        }
+
+        if (listing.owner_id) {
+            fetchOwnerInfo();
+        }
+    }, [listing.owner_id]);
 
     const handleFavoriteToggle = async () => {
         if (!userId || isToggling) {
@@ -244,21 +271,49 @@ export function ListingDetailContent({ listing, userId }: ListingDetailContentPr
                     <div className="lg:w-1/2 bg-gradient-to-br from-white to-rose-50/20">
                         <div className="p-3 lg:p-4">
                             {/* Header */}
-                            <div className="mb-3">
-                                <h1 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2">
+                            <div className="mb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                                <h1 className="text-xl lg:text-2xl font-bold text-gray-900">
                                     {listing.title}
                                 </h1>
-                                <div className="flex flex-wrap items-center gap-2 text-gray-600 text-xs">
-                                    <div className="flex items-center gap-1">
-                                        <UserIcon className="h-3.5 w-3.5" />
-                                        <span>{listing.owner_username || "Unknown"}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                        <CalendarIcon className="h-3.5 w-3.5" />
-                                        <span>{formatDate(listing.publication_date)}</span>
-                                    </div>
+                                {userId && (
+                                    <button
+                                        onClick={() => setIsContactModalOpen(true)}
+                                        className="mt-2 sm:mt-0 px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors shadow"
+                                    >
+                                        Contact Owner
+                                    </button>
+                                )}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 text-gray-600 text-xs">
+                                <div className="flex items-center gap-1">
+                                    <CalendarIcon className="h-3.5 w-3.5" />
+                                    <span>{formatDate(listing.publication_date)}</span>
                                 </div>
                             </div>
+
+                            {/* Contact Owner */}
+                            {isContactModalOpen && ownerInfo && (
+                                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50">
+                                    <div className="bg-white rounded-xl max-w-sm w-full p-6 relative shadow-lg">
+                                        <h2 className="text-lg font-bold text-gray-900 mb-3">Contact Information</h2>
+                                        <p className="text-gray-700 mb-1">
+                                            <span className="font-medium">Username:</span> {ownerInfo.username}
+                                        </p>
+                                        <p className="text-gray-700 mb-1">
+                                            <span className="font-medium">Email:</span> {ownerInfo.email}
+                                        </p>
+                                        <p className="text-gray-700 mb-1">
+                                            <span className="font-medium">Phone:</span> {phone}
+                                        </p>
+                                        <button
+                                            onClick={() => setIsContactModalOpen(false)}
+                                            className="mt-2 px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors"
+                                        >
+                                            Close
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Price - Prominent */}
                             <div className="mb-4 p-4 bg-gradient-to-br from-gray-50 via-rose-50/30 to-gray-50 rounded-xl border-2 border-rose-100/50 shadow-md">

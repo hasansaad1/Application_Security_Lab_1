@@ -24,6 +24,34 @@ async function getUserByEmail(email) {
   return user; // TODO: check security and limitations of usage
 }
 
+// Get user by ID
+async function getUserById(id) {
+  // Query database
+  const [rows] = await pool.query("SELECT * FROM Users WHERE id = ?;", [id]);
+
+  if (!rows.length) {
+    return null;
+  }
+
+  const userData = { ...rows[0] };
+  // Remove role field if it exists (for backward compatibility)
+  delete userData.role;
+
+  const user = new User(userData);
+
+  // Decrypt phone number
+  try {
+    const parsed = JSON.parse(user.phone_number);
+    const decrypted = decryptToJSON(parsed.encrypted, parsed.iv, parsed.tag);
+    user.phone_number = decrypted.phone_number;
+  } catch (e) {
+    console.warn(`Could not decrypt phone number for user ${id}:`, e.message);
+  }
+
+  return user;
+}
+
+
 // Create new user
 async function createUser(user) {
   const { encrypted, iv, tag } = encryptJSON({ phone_number: user.phone_number });
@@ -63,6 +91,7 @@ async function getUsers() {
 
 module.exports = {
   getUserByEmail,
+  getUserById,
   createUser,
   getUsers
 };
