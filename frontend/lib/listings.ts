@@ -137,3 +137,37 @@ export async function getListingById(id: number): Promise<Listing | null> {
     return listing;
 }
 
+export async function getListingPhone(id: number): Promise<string> {
+    const cookieStore = await cookies();
+
+    const cookieHeader = cookieStore
+        .getAll()
+        .map((c) => `${c.name}=${encodeURIComponent(c.value)}`)
+        .join("; ");
+
+    let res: Response;
+    try {
+        res = await fetch(`http://backend:8080/listings/${id}/phone`, {
+            method: "GET",
+            headers: {
+                cookie: cookieHeader,
+                accept: "application/json",
+            },
+            cache: "no-store",
+        });
+    } catch (err) {
+        console.error("[getListingPhone] fetch failed:", err);
+        throw new Error("Failed to fetch phone");
+    }
+
+    if (!res.ok) {
+        console.error("[getListingPhone] returned", res.status);
+        throw new Error(`Failed to fetch phone: ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data.data.phone_number; 
+}
+
+
+

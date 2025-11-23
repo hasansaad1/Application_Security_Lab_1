@@ -8,6 +8,8 @@ import {
     HeartIcon,
     CalendarIcon,
     UserIcon,
+    EnvelopeIcon,  
+    PhoneIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
 import { Listing } from "@/lib/listings";
@@ -16,13 +18,15 @@ import { checkFavoriteStatus, addToFavorites, removeFromFavorites } from "@/lib/
 type ListingDetailContentProps = {
     listing: Listing;
     userId: string;
+    phone: string;
 };
 
-export function ListingDetailContent({ listing, userId }: ListingDetailContentProps) {
+export function ListingDetailContent({ listing, userId, phone }: ListingDetailContentProps) {
     const router = useRouter();
     const [isFavorited, setIsFavorited] = useState(false);
     const [isToggling, setIsToggling] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
     // Check favorite status on mount
     useEffect(() => {
@@ -30,6 +34,27 @@ export function ListingDetailContent({ listing, userId }: ListingDetailContentPr
             checkFavoriteStatus(listing.id).then(setIsFavorited);
         }
     }, [listing.id, userId]);
+
+    const [ownerInfo, setOwnerInfo] = useState<any>(null);
+
+    useEffect(() => {
+        if (!listing?.owner_id) return;
+
+        const fetchOwner = async () => {
+            try {
+                const res = await fetch(`/api/users/id/${listing.owner_id}`);
+                if (!res.ok) throw new Error("Error fetching user");
+                
+                const data = await res.json();
+                setOwnerInfo(data); 
+
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        fetchOwner();
+    }, [listing]);
 
     const handleFavoriteToggle = async () => {
         if (!userId || isToggling) {
@@ -244,21 +269,81 @@ export function ListingDetailContent({ listing, userId }: ListingDetailContentPr
                     <div className="lg:w-1/2 bg-gradient-to-br from-white to-rose-50/20">
                         <div className="p-3 lg:p-4">
                             {/* Header */}
-                            <div className="mb-3">
-                                <h1 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2">
+                            <div className="mb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                                <h1 className="text-xl lg:text-2xl font-bold text-gray-900">
                                     {listing.title}
                                 </h1>
-                                <div className="flex flex-wrap items-center gap-2 text-gray-600 text-xs">
-                                    <div className="flex items-center gap-1">
-                                        <UserIcon className="h-3.5 w-3.5" />
-                                        <span>{listing.owner_username || "Unknown"}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                        <CalendarIcon className="h-3.5 w-3.5" />
-                                        <span>{formatDate(listing.publication_date)}</span>
-                                    </div>
+                                {userId && (
+                                    <button
+                                        onClick={() => setIsContactModalOpen(true)}
+                                        className="mt-2 sm:mt-0 px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors shadow"
+                                    >
+                                        Contact Owner
+                                    </button>
+                                )}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 text-gray-600 text-xs">
+                                <div className="flex items-center gap-1">
+                                    <CalendarIcon className="h-3.5 w-3.5" />
+                                    <span>{formatDate(listing.publication_date)}</span>
                                 </div>
                             </div>
+
+                            {/* Contact Owner */}
+                            {isContactModalOpen && ownerInfo && (
+                                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50">
+                                    <div className="bg-white rounded-xl max-w-sm w-full p-6 relative shadow-lg">
+                                        <h2 className="text-lg font-bold text-gray-900 mb-4 text-center">Contact Information</h2>
+
+                                        {/* Profile Picture */}
+                                        <div className="flex justify-center mb-4">
+                                            <div className="w-28 h-28 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center text-3xl font-bold text-white border">
+                                                {ownerInfo?.profile_picture_path ? (
+                                                    <img
+                                                        src={
+                                                            ownerInfo.profile_picture_path.startsWith("http")
+                                                                ? ownerInfo.profile_picture_path
+                                                                : `https://localhost/api/uploads/${ownerInfo.profile_picture_path}`
+                                                        }
+                                                        className="w-full h-full object-cover"
+                                                        alt={ownerInfo.username}
+                                                    />
+                                                ) : (
+                                                    <span>{ownerInfo.username?.charAt(0).toUpperCase()}</span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Owner Info */}
+                                        <div className="space-y-3 text-gray-700 text-sm">
+                                            <div className="flex items-center gap-2">
+                                                <UserIcon className="h-5 w-5 text-gray-500 flex-shrink-0" />
+                                                <span className="font-medium">Username:</span>
+                                                <span>{ownerInfo.username}</span>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                <EnvelopeIcon className="h-5 w-5 text-gray-500 flex-shrink-0" />
+                                                <span className="font-medium">Email:</span>
+                                                <span>{ownerInfo.email}</span>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                <PhoneIcon className="h-5 w-5 text-gray-500 flex-shrink-0" />
+                                                <span className="font-medium">Phone:</span>
+                                                <span>{phone}</span>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={() => setIsContactModalOpen(false)}
+                                            className="mt-4 w-full px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors"
+                                        >
+                                            Close
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Price - Prominent */}
                             <div className="mb-4 p-4 bg-gradient-to-br from-gray-50 via-rose-50/30 to-gray-50 rounded-xl border-2 border-rose-100/50 shadow-md">

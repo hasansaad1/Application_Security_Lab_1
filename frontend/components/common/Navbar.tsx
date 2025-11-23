@@ -14,7 +14,7 @@ type User = {
     id?: string;
     username?: string;
     email?: string;
-    profilePictureUrl?: string;
+    profile_picture_path?: string;
 };
 
 type NavbarProps = {
@@ -31,7 +31,9 @@ export function Navbar({ user }: NavbarProps) {
     const menuRef = useRef<HTMLDivElement | null>(null);
 
     const displayName = user.username;
-    const profilePictureUrl = user.profilePictureUrl || "";
+    const profilePictureUrl = user.profile_picture_path
+        ? `https://localhost/api/uploads/${user.profile_picture_path}`
+        : "";
 
     // Close menu when clicking outside
     useEffect(() => {

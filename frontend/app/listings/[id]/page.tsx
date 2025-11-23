@@ -3,7 +3,7 @@ import { redirect, notFound } from "next/navigation";
 import { Navbar } from "@/components/common/Navbar";
 import { ListingDetailContent } from "@/components/listings/ListingDetailContent";
 import { verifySession } from "@/lib/session";
-import { getListingById } from "@/lib/listings";
+import { getListingById, getListingPhone } from "@/lib/listings";
 
 type PageProps = {
     params: Promise<{ id: string }>;
@@ -24,6 +24,7 @@ export default async function ListingDetailPage({ params }: PageProps) {
     }
 
     const listing = await getListingById(listingId);
+    const phone = await getListingPhone(listingId);
 
     if (!listing) {
         notFound();
@@ -33,7 +34,7 @@ export default async function ListingDetailPage({ params }: PageProps) {
         <div className="flex min-h-screen flex-col bg-gray-50">
             <Navbar user={user as { id?: string; username?: string; email?: string; profilePictureUrl?: string }} />
             <main className="flex-1">
-                <ListingDetailContent listing={listing} userId={user.id} />
+                <ListingDetailContent listing={listing} userId={user.id} phone={phone} />
             </main>
         </div>
     );
