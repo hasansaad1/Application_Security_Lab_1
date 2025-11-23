@@ -1,8 +1,8 @@
 INSERT INTO Users (username, email, password_hash, profile_picture_path, phone_number)
 VALUES
-('admin_john', 'admin.john@homigo.com', 'hashed_pw_123', '/images/profiles/admin_john.jpg', '{"encrypted":"7qEYPqRFbf3U6xbTgHj+UfZVwdWdJRdWuPHAZxShASXfYg==","iv":"1Z/0aeZ5ALYlukVx","tag":"kQ1Xva5AzlX8eyT+QoTwbg=="}'),
-('landlord_maria', 'maria.landlord@homigo.com', 'hashed_pw_456', '/images/profiles/maria.jpg', '{"encrypted":"32c7Yfb7RMPAugHlMGK9+FtYiGN4B0bKHvevbHdrRYPuRA==","iv":"JcMejCKS9ls38BJ2","tag":"5pWWiD/o6pBUHrw2p/taNw=="}'),
-('tenant_bob', 'bob.tenant@homigo.com', 'hashed_pw_789', '/images/profiles/bob.jpg', '{"encrypted":"m1/UvhA4vCtztm0/FJ2GUMiiEqLjtInL1K/BcdoYVoiXQg==","iv":"ju/rg8hSr8MZHTVp","tag":"EjxwIRVznKdwCnFSHHvF5g=="}'),
+('admin_john', 'admin.john@homigo.com', 'hashed_pw_123', NULL, '{"encrypted":"7qEYPqRFbf3U6xbTgHj+UfZVwdWdJRdWuPHAZxShASXfYg==","iv":"1Z/0aeZ5ALYlukVx","tag":"kQ1Xva5AzlX8eyT+QoTwbg=="}'),
+('landlord_maria', 'maria.landlord@homigo.com', 'hashed_pw_456', NULL, '{"encrypted":"32c7Yfb7RMPAugHlMGK9+FtYiGN4B0bKHvevbHdrRYPuRA==","iv":"JcMejCKS9ls38BJ2","tag":"5pWWiD/o6pBUHrw2p/taNw=="}'),
+('tenant_bob', 'bob.tenant@homigo.com', 'hashed_pw_789', NULL, '{"encrypted":"m1/UvhA4vCtztm0/FJ2GUMiiEqLjtInL1K/BcdoYVoiXQg==","iv":"ju/rg8hSr8MZHTVp","tag":"EjxwIRVznKdwCnFSHHvF5g=="}'),
 ('tenant_alice', 'alice.tenant@homigo.com', 'hashed_pw_abc', NULL, '{"encrypted":"UDHQOSba6K/7qTHFzXtYtJDEp+U9jBG1UKgW7ctdqKqIiw==","iv":"gO5k+17RnreLictA","tag":"bnQTb+XMyRxzKqy68AeQFA=="}');
 
 INSERT INTO Listings (owner_id, title, description, price, address_country, address_province, address_city, address_zip_code, address_line1, address_line2, is_available)

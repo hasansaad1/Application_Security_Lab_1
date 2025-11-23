@@ -8,6 +8,8 @@ import {
     HeartIcon,
     CalendarIcon,
     UserIcon,
+    EnvelopeIcon,  
+    PhoneIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
 import { Listing } from "@/lib/listings";
@@ -33,30 +35,26 @@ export function ListingDetailContent({ listing, userId, phone }: ListingDetailCo
         }
     }, [listing.id, userId]);
 
-    const [ownerInfo, setOwnerInfo] = useState<{ username: string; email: string } | null>(null);
+    const [ownerInfo, setOwnerInfo] = useState<any>(null);
 
     useEffect(() => {
-        async function fetchOwnerInfo() {
+        if (!listing?.owner_id) return;
+
+        const fetchOwner = async () => {
             try {
                 const res = await fetch(`/api/users/id/${listing.owner_id}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setOwnerInfo({
-                        username: data.username,
-                        email: data.email,
-                    });
-                } else {
-                    console.error("Failed to fetch owner info");
-                }
-            } catch (err) {
-                console.error("Error fetching owner info:", err);
-            }
-        }
+                if (!res.ok) throw new Error("Error fetching user");
+                
+                const data = await res.json();
+                setOwnerInfo(data); 
 
-        if (listing.owner_id) {
-            fetchOwnerInfo();
-        }
-    }, [listing.owner_id]);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        fetchOwner();
+    }, [listing]);
 
     const handleFavoriteToggle = async () => {
         if (!userId || isToggling) {
@@ -295,19 +293,51 @@ export function ListingDetailContent({ listing, userId, phone }: ListingDetailCo
                             {isContactModalOpen && ownerInfo && (
                                 <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50">
                                     <div className="bg-white rounded-xl max-w-sm w-full p-6 relative shadow-lg">
-                                        <h2 className="text-lg font-bold text-gray-900 mb-3">Contact Information</h2>
-                                        <p className="text-gray-700 mb-1">
-                                            <span className="font-medium">Username:</span> {ownerInfo.username}
-                                        </p>
-                                        <p className="text-gray-700 mb-1">
-                                            <span className="font-medium">Email:</span> {ownerInfo.email}
-                                        </p>
-                                        <p className="text-gray-700 mb-1">
-                                            <span className="font-medium">Phone:</span> {phone}
-                                        </p>
+                                        <h2 className="text-lg font-bold text-gray-900 mb-4 text-center">Contact Information</h2>
+
+                                        {/* Profile Picture */}
+                                        <div className="flex justify-center mb-4">
+                                            <div className="w-28 h-28 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center text-3xl font-bold text-white border">
+                                                {ownerInfo?.profile_picture_path ? (
+                                                    <img
+                                                        src={
+                                                            ownerInfo.profile_picture_path.startsWith("http")
+                                                                ? ownerInfo.profile_picture_path
+                                                                : `https://localhost/api/uploads/${ownerInfo.profile_picture_path}`
+                                                        }
+                                                        className="w-full h-full object-cover"
+                                                        alt={ownerInfo.username}
+                                                    />
+                                                ) : (
+                                                    <span>{ownerInfo.username?.charAt(0).toUpperCase()}</span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Owner Info */}
+                                        <div className="space-y-3 text-gray-700 text-sm">
+                                            <div className="flex items-center gap-2">
+                                                <UserIcon className="h-5 w-5 text-gray-500 flex-shrink-0" />
+                                                <span className="font-medium">Username:</span>
+                                                <span>{ownerInfo.username}</span>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                <EnvelopeIcon className="h-5 w-5 text-gray-500 flex-shrink-0" />
+                                                <span className="font-medium">Email:</span>
+                                                <span>{ownerInfo.email}</span>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                <PhoneIcon className="h-5 w-5 text-gray-500 flex-shrink-0" />
+                                                <span className="font-medium">Phone:</span>
+                                                <span>{phone}</span>
+                                            </div>
+                                        </div>
+
                                         <button
                                             onClick={() => setIsContactModalOpen(false)}
-                                            className="mt-2 px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors"
+                                            className="mt-4 w-full px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors"
                                         >
                                             Close
                                         </button>

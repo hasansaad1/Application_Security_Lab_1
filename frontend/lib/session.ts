@@ -4,7 +4,7 @@ export type SessionUser = {
     id: string;
     username?: string;
     email?: string;
-    profilePictureUrl?: string;
+    profile_picture_path?: string;
 };
 
 export async function verifySession(): Promise<SessionUser | null> {
