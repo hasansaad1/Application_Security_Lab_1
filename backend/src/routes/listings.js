@@ -1,3 +1,4 @@
+const audit = require("../services/audit");
 const express = require("express");
 const router = express.Router();
 const path = require("path");
@@ -96,6 +97,7 @@ router.post("/", uploadListingImages, async (req, res) => {
     }
 
     const created = await getListingById(insertId);
+    await audit.logListingCreate(owner_id, insertId, req.ip);
     res.status(201).json({ message: "Listing created", listing: created });
   } catch (err) {
     console.error("Error creating listing:", err);
@@ -323,6 +325,7 @@ router.put("/:id", auth(), uploadListingImages, async (req, res) => {
 
     // Update the listing
     const updated = await updateListing(id, updates);
+    await audit.logListingUpdate(req.user.sub, id, req.ip);
     res.status(200).json({ message: "Listing updated", listing: updated });
   } catch (err) {
     console.error("Error updating listing:", err);
@@ -358,6 +361,7 @@ router.delete("/:id", auth(), async (req, res) => {
 
     // Delete the listing
     await deleteListing(id);
+    await audit.logListingDelete(req.user.sub, id, req.ip);
     res.status(200).json({ message: "Listing deleted successfully" });
   } catch (err) {
     console.error("Error deleting listing:", err);
