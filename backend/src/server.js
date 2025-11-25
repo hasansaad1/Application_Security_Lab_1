@@ -15,7 +15,18 @@ const listingRoutes = require("./routes/listings");
 app.set('trust proxy', 1); // TRUST the single nginx proxy in front of the app
 
 app.use(morgan("dev"));
-app.use(helmet());
+
+// Basic CSP: Only allow scripts/styles from your own domain ('self')
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'"], // Add analytics/CDNs here
+    styleSrc: ["'self'", "'unsafe-inline'"], // unsafe-inline is often needed for styles
+    imgSrc: ["'self'", "data:", "my-bucket.s3.amazonaws.com"],
+    objectSrc: ["'none'"], // Prevents Flash/Java applets
+    upgradeInsecureRequests: [], // Forces HTTP urls to HTTPS
+  },
+}));
 
 // parse JSON bodies, with limit
 app.use(express.json({ limit: '1mb' }));
