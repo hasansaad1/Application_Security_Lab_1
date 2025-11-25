@@ -3,7 +3,6 @@ const morgan = require("morgan");
 const helmet = require("helmet");
 const cors = require("cors");
 const cookieParser = require('cookie-parser');
-const path = require("path");
 const config = require("./config");
 const app = express();
 
@@ -12,6 +11,8 @@ const { uploadErrorHandler } = require("./middleware/upload/errorHandler");
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const listingRoutes = require("./routes/listings");
+
+app.set('trust proxy', 1); // TRUST the single nginx proxy in front of the app
 
 app.use(morgan("dev"));
 app.use(helmet());
