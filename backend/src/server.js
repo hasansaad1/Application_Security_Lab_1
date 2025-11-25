@@ -7,6 +7,7 @@ const config = require("./config");
 const app = express();
 
 const { uploadErrorHandler } = require("./middleware/upload/errorHandler");
+const securityFirewall = require("./middleware/firewall");
 
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
@@ -28,21 +29,22 @@ app.use(helmet.contentSecurityPolicy({
   },
 }));
 
-// parse JSON bodies, with limit
-app.use(express.json({ limit: '1mb' }));
-
-const allowedOrigin = process.env.CORS_ORIGIN || '*'; //this is okay in local/dev
-app.use(
-  cors({
-    origin: allowedOrigin,
+app.use(cors({
+    origin: process.env.CORS_ORIGIN || '*', //this is okay in local/dev
     credentials: true,
   })
 );
 
+// parse JSON bodies, with limit
+app.use(express.json({ limit: '1mb' }));
+
 app.use(cookieParser());
+
 
 // Serve uploaded files (images, profile pictures, etc.)
 app.use("/uploads", express.static(config.uploads.root));
+
+app.use(securityFirewall);
 
 // Check server 
 app.get("/health", function(req, res) {

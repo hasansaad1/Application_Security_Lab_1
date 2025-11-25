@@ -6,7 +6,6 @@ const jwt = require('jsonwebtoken');
 const path = require('path');
 
 const config = require("../config");
-const { auth } = require("../middleware/auth");
 const { uploadProfilePicture } = require("../middleware/upload/profilePicture");
 const userService = require("../services/user");
 const {
@@ -171,7 +170,7 @@ router.post("/login", authLimiter, async (req, res) => {
   }
 });
 
-router.get("/me", auth(), async (req, res) => {
+router.get("/me", async (req, res) => {
   try {
     const user = await userService.getUserByEmail(req.user.email);
     if (!user) {
