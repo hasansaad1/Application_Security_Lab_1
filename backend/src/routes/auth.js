@@ -1,3 +1,5 @@
+const audit = require("../services/audit");
+const rateLimit = require('express-rate-limit');
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -24,6 +26,15 @@ const COOKIE_SETTINGS = {
   path: '/',
   maxAge: 1000 * 60 * 60, // 1 hour
 };
+
+// Limits each IP to 5 requests per 10 minutes for login/register
+const authLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 5, // limit each IP to 5 requests per windowMs
+  message: {
+    error: "Too many requests from this IP, please try again after 10 minutes"
+  },
+});
 
 function signToken(user) {
   return jwt.sign({
@@ -84,6 +95,8 @@ router.post("/register", uploadProfilePicture, async (req, res) => {
     /* Generate JWT and store it in cookie */
     const token = signToken(user);
     res.cookie('token', token, COOKIE_SETTINGS);
+    await audit.logLoginSuccess(user.id, req.ip);
+
 
     res.status(201).json({
       success: true,
@@ -100,12 +113,14 @@ router.post("/register", uploadProfilePicture, async (req, res) => {
   }
 });
 
-router.post("/login", async (req, res) => {
+router.post("/login", authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
     /* Validations */
     if (!email || !password) {
+      
+      await audit.logLoginFail(email || "unknown", req.ip);
       return res.status(400).json({ error: "Email and password are required" });
     }
 
@@ -113,15 +128,18 @@ router.post("/login", async (req, res) => {
     const sanitizedEmail = sanitizeString(email).toLowerCase();
     
     if (!validateEmail(sanitizedEmail)) {
+      await audit.logLoginFail(sanitizedEmail, req.ip);
       return res.status(400).json({ error: "Invalid email format" });
     }
 
     if (typeof password !== 'string' || password.length === 0) {
+      await audit.logLoginFail(sanitizedEmail, req.ip);
       return res.status(400).json({ error: "Password is required" });
     }
     
     const user = await userService.getUserByEmail(sanitizedEmail);
     if (!user) {
+      await audit.logLoginFail(sanitizedEmail, req.ip);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
@@ -129,17 +147,19 @@ router.post("/login", async (req, res) => {
     try {
       validCredentials = await bcrypt.compare(password, user.password_hash);
     } catch (bcryptErr) {
+      await audit.logLoginFail(sanitizedEmail, req.ip);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     if (!validCredentials) {
+      await audit.logLoginFail(sanitizedEmail, req.ip);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     /* Generate JWT and store it in cookie */
     const token = signToken(user);
     res.cookie('token', token, COOKIE_SETTINGS);
-
+    await audit.logLoginSuccess(user.id, req.ip);
     res.status(200).json({
       data: {
         user: user.toJSON()
@@ -165,7 +185,7 @@ router.get("/me", auth(), async (req, res) => {
   }
 });
 
-router.post("/logout", async (req, res) => {
+router.post("/logout", authLimiter, async (req, res) => {
   const { maxAge, ...settings } =  COOKIE_SETTINGS;
   res.clearCookie('token', settings);
   return res.json({ success: true });

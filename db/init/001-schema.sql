@@ -67,7 +67,7 @@ CREATE TABLE ListingFollowers (
 
 CREATE TABLE AuditLogs (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id INT NULL,
     action VARCHAR(100) NOT NULL,
     ip_address VARCHAR(45),
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
