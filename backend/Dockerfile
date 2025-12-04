@@ -16,6 +16,11 @@ RUN npm install
 # Copy the rest of the app (Compose Watch will keep it in sync)
 COPY . .
 
+# Give the 'node' user permission to write to the app directory
+RUN chown -R node:node /code
+# Switch to non-root user
+USER node
+
 # No port exposure here; Nginx will talk to this service internally.
 # Your npm script should start Nodemon (see below).
 CMD ["npm", "run", "start-watch"]
