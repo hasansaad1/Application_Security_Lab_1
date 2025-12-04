@@ -82,6 +82,14 @@ const routePolicies = [
   },
 
   // --- USERS ROUTES ---
+  // 1. Specific static sub-paths (Must come before generic pattern)
+  {
+    pathRegex: /^\/users\/me\/?$/,
+    methods: ['PUT'], 
+    allowedContentTypes: ['multipart/form-data'],
+    auth: true
+  },
+  // 2. Generic dynamic path (e.g., /users/123)
   {
     pathRegex: /^\/users\/[\w-]+\/?$/,
     methods: ['GET'], 
