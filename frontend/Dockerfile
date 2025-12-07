@@ -15,5 +15,11 @@ RUN npm ci
 # Copy the rest of the app
 COPY . .
 
+# Give the 'node' user permission to write to the app directory
+RUN chown -R node:node /code
+# Switch to non-root user
+USER node
+
+
 # Run the Next.js dev server
 CMD ["npm", "run", "dev"]

@@ -2,9 +2,7 @@ const audit = require("../services/audit");
 const express = require("express");
 const router = express.Router();
 const path = require("path");
-const { auth } = require("../middleware/auth");
 const { uploadListingImages } = require("../middleware/upload/listingImages");
-const { uploadErrorHandler } = require("../middleware/upload/errorHandler");
 const config = require("../config");
 const { assertOwner } = require("../utils/ownership");
 const {
@@ -103,10 +101,10 @@ router.post("/", uploadListingImages, async (req, res) => {
     console.error("Error creating listing:", err);
     res.status(500).json({ error: "Internal server error" });
   }
-}, uploadErrorHandler);
+});
 
 // Get current user's listings (must come before /:id route)
-router.get("/my", auth(), async (req, res) => {
+router.get("/my", async (req, res) => {
   try {
     const currentUserId = req.user.sub;
     const listings = await getListingsByOwner(currentUserId);
@@ -118,7 +116,7 @@ router.get("/my", auth(), async (req, res) => {
 });
 
 // Get current user's favorite listings (must come before /:id route)
-router.get("/favorites", auth(), async (req, res) => {
+router.get("/favorites", async (req, res) => {
   try {
     const currentUserId = req.user.sub;
     const listings = await getFavoriteListings(currentUserId);
@@ -145,7 +143,7 @@ router.get("/owner/:id", async (req, res) => {
 });
 
 // Check if listing is favorited by current user (must come before /:id route)
-router.get("/:id/favorite", auth(), async (req, res) => {
+router.get("/:id/favorite", async (req, res) => {
   try {
     const listingId = validateInteger(req.params.id, 1);
     if (!listingId) {
@@ -162,7 +160,7 @@ router.get("/:id/favorite", auth(), async (req, res) => {
 });
 
 // Add listing to favorites (must come before /:id route)
-router.post("/:id/favorite", auth(), async (req, res) => {
+router.post("/:id/favorite", async (req, res) => {
   try {
     const listingId = validateInteger(req.params.id, 1);
     if (!listingId) {
@@ -185,7 +183,7 @@ router.post("/:id/favorite", auth(), async (req, res) => {
 });
 
 // Remove listing from favorites (must come before /:id route)
-router.delete("/:id/favorite", auth(), async (req, res) => {
+router.delete("/:id/favorite", async (req, res) => {
   try {
     const listingId = validateInteger(req.params.id, 1);
     if (!listingId) {
@@ -243,7 +241,7 @@ router.get("/:id/phone", async (req, res) => {
 });
 
 // Update listing by id (owner only)
-router.put("/:id", auth(), uploadListingImages, async (req, res) => {
+router.put("/:id", uploadListingImages, async (req, res) => {
   try {
     const id = validateInteger(req.params.id, 1);
     if (!id) {
@@ -340,10 +338,10 @@ router.put("/:id", auth(), uploadListingImages, async (req, res) => {
     }
     res.status(500).json({ error: "Internal server error" });
   }
-}, uploadErrorHandler);
+});
 
 // Delete listing by id (owner only)
-router.delete("/:id", auth(), async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     const id = validateInteger(req.params.id, 1);
     if (!id) {

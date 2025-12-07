@@ -89,9 +89,54 @@ async function getUsers() {
   });
 }
 
+// Update user
+async function updateUser(userId, updates) {
+  const updateFields = [];
+  const updateValues = [];
+
+  // Handle username
+  if (updates.username !== undefined) {
+    updateFields.push("username = ?");
+    updateValues.push(updates.username);
+  }
+
+  // Handle email
+  if (updates.email !== undefined) {
+    updateFields.push("email = ?");
+    updateValues.push(updates.email);
+  }
+
+  // Handle phone_number (encrypt it)
+  if (updates.phone_number !== undefined) {
+    const { encrypted, iv, tag } = encryptJSON({ phone_number: updates.phone_number });
+    const encryptedPhone = JSON.stringify({ encrypted, iv, tag });
+    updateFields.push("phone_number = ?");
+    updateValues.push(encryptedPhone);
+  }
+
+  // Handle profile_picture_path
+  if (updates.profile_picture_path !== undefined) {
+    updateFields.push("profile_picture_path = ?");
+    updateValues.push(updates.profile_picture_path);
+  }
+
+  if (updateFields.length === 0) {
+    throw new Error("No valid fields to update");
+  }
+
+  updateValues.push(userId);
+
+  const query = `UPDATE Users SET ${updateFields.join(", ")} WHERE id = ?;`;
+  await pool.query(query, updateValues);
+
+  // Return updated user
+  return getUserById(userId);
+}
+
 module.exports = {
   getUserByEmail,
   getUserById,
   createUser,
-  getUsers
+  getUsers,
+  updateUser
 };

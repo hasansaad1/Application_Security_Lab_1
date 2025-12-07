@@ -53,6 +53,11 @@ async function logPhoneReject(userId, phoneId, ip) {
   await logAudit(userId, `phone_reject: ${phoneId}`, ip);
 }
 
+/** File uploads */
+async function logFileUploadMagicBytes(userId, ip) {
+  await logAudit(userId, `file_upload_wong_magic_bytes`, ip);
+}
+
 module.exports = {
   logAudit,
   logLoginSuccess,
@@ -62,4 +67,5 @@ module.exports = {
   logListingDelete,
   logPhoneApprove,
   logPhoneReject,
+  logFileUploadMagicBytes
 };
